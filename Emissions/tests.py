@@ -1,22 +1,16 @@
 from django.test import TestCase
+from django.urls import resolve
+from Emissions.views import index
 
 
-def printer(msg):
-    print("\n" + "-"*(len(msg) + 10))
-    print("Got here #" + msg)
-    print("-"*(len(msg) + 10) + "\n")
-
-# printer("0")
-
-class PlaceholderTest(TestCase):
-    # printer("1")
+class HomePageTest(TestCase):
     
-    def setUp(self):
-        # printer("2")    
-        self.val = 1
-
-    def failure_test(self):
-        self.assertEqual(self.val, 3)
+    def root_url_resolves_to_home_page(self):
+        # this will find the function that maps to the "/" route
+        found = resolve("/")
+        # this tests whether the function for "/" is the 'imdex' function
+        # (I assert it should be)
+        self.assertEqual(found.func, index)
     
     def runTest(self):
-        self.failure_test()
+        self.root_url_resolves_to_home_page()
