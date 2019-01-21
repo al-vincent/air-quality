@@ -7,28 +7,70 @@
 
     <!-- Bootstrap, custom and leaflet CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-		<link href="css/styles.css" rel="stylesheet" type="text/css">
-		<link href="lib/css/leaflet.css" rel="stylesheet" type="text/css">
-		
+
+    {% load static %}
+    <!-- <link href="{% static 'css/styles.css' %}" rel="stylesheet" type="text/css">     -->
+    <!-- <link href="{% static 'lib/css/leaflet.css' %}" rel="stylesheet" type="text/css"> -->
+    <link href="/static/css/styles.css" rel="stylesheet">
+    <link href="/static/lib/css/leaflet.css" rel="stylesheet">
 		<!-- leaflet javascript -->
-    <script src="lib/js/leaflet.js"></script>
-    <script src="lib/js/leaflet-heat.js"></script>
+    <!-- <script src="{% static 'lib/js/leaflet.js' %}"></script> -->
+    <!-- <script src="{% static 'lib/js/leaflet-heat.js' %}"></script> -->
+    <script src="/static/lib/js/leaflet.js"></script>
+    <script src="/static/lib/js/leaflet-heat.js"></script>
 
     <title>Air Quality</title>
   </head>
   <body>
-    <!-- <div class="container"> -->
+    <div class="container">
       <!-- main body -->
-      <!-- <div class="jumbotron"> -->
-      
-        <!-- create the div that will hold the map -->
-        <!-- <div id="map"></div> -->
-        <!-- Load the JSON places and the javascript to render the map -->
-        <!-- <script type='text/javascript' src='data/places.json'></script> -->
-        <!-- <script src="js/index.js"></script> -->
-      <!-- </div> -->
-      <!-- /main body -->      
-    <!-- </div> -->
+
+      <!-- map, drop-down row -->
+      <div class="row">
+        
+        <!-- map column -->
+        <div class="jumbotron col-8">
+          <!-- create the div that will hold the map -->
+          <div id="map"></div>
+          <!-- Load the JSON places and the javascript to render the map -->
+          <!-- <script type='text/javascript' src="{% static 'data/places.json' %}"></script>
+          <script src="{% static 'js/index.js' %}"></script> -->
+          <script type='text/javascript' src="/static/data/places.json"></script>
+          <script src="static/js/index.js"></script>
+        </div>
+        <!-- map column -->
+
+        <!-- drop-down options column -->
+        <div class="jumbotron col-4">
+          <div class="row">
+            <select id="list-emissions">
+              <option value="carbon-monoxide">Carbon Monoxide</option>
+            </select>
+          </div>
+          <div class="row">
+              <select id="list-london-areas">
+                  <option value="all">All</option>
+              </select>
+          </div>
+          <div class="row">
+              <select id="list-illnesses">
+                  <option value="asthma">Asthma</option>
+              </select>
+          </div>
+        </div>
+        <!-- drop-down options column -->
+
+      </div>
+      <!-- /map, drop-down row -->
+       
+      <!-- illness information row -->
+      <div class="row">
+        <p id="info-illness">Info about the default illness</p>
+      </div>
+      <!-- illness information row -->
+
+    </div>
+    <!-- /main body -->     
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
