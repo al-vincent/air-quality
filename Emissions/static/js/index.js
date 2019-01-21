@@ -14,14 +14,7 @@ function main(){
 			subdomains: ['a','b','c']
 			}).addTo(map);
     
-	// add markers to map, from places.json. 
-	// for ( let i=0; i < markers.length; i++ ) {
-	// 	L.marker( [markers[i].lat, markers[i].lng] )
-	// 		// set the popup text to be the city and country that the marker refers to
-	// 		.bindPopup( markers[i].city + ", " + markers[i].country )
-	// 		.addTo( map );
-    // }
-    
+    // add a series of points ot the map, with randomly-generated intensities
     let heat = L.heatLayer([
         [-37.90295525,175.4772238333,0.331566754675031],
         [-37.9155634,175.47150915,0.0330886810539454],
@@ -55,12 +48,6 @@ function main(){
         [-37.8983034667,175.4792230333,0.560477608746508],
         [-37.8987899833,175.4796567167,0.330237470617188]        
     ], {radius: 25}).addTo(map);
-	
-	// Get the unique countries visited (don't actually do anything with them; just for interest...!)
-	let countriesVisited = []; 
-	markers.forEach( function(d) { countriesVisited.push(d.country); });
-	let uniqueCountries = new Set(countriesVisited);
-	console.log(uniqueCountries);
 }
 
 // run the script
