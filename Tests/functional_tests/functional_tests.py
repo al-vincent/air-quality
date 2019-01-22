@@ -18,7 +18,7 @@ class NewVisitorTest(unittest.TestCase):
     def tearDown(self):
         self.browser.quit()
     
-    def test_open_page(self):
+    def open_page_test(self):
         # Cornelius opens the homepage
         self.browser.get("http://localhost:8000")
 
@@ -26,10 +26,10 @@ class NewVisitorTest(unittest.TestCase):
         self.assertIn("Air Quality", self.browser.title)
     
         # He is presented with a map of the London area
-        map = self.browser.find_element_by_id("map")
+        emissions_map = self.browser.find_element_by_id("map")
         # NOTE: need more than this. Can I test if a Leaflet map is actually displayed?
         # E.g. check against the class? [I assume Leaflet maps have a particular class]
-        self.assertIn("leaflet-container", map.get_attribute("class"))
+        self.assertIn("leaflet-container", emissions_map.get_attribute("class"))
 
         # He sees a drop-down menu to choose an emissions type to view. There is 
         # a default value, of carbon monoxide
@@ -41,11 +41,7 @@ class NewVisitorTest(unittest.TestCase):
         # test for both the 'value' attribute and the 'text' attribute
         # (not required, but useful syntax!)
         self.assertEqual( option.get_attribute("value"), "carbon-monoxide" )
-        self.assertEqual( option.get_attribute("text"), "Carbon Monoxide" )
-
-        # He changes this to nitrogen dioxide, and the map updates to show the 
-        # new values
-        # emissions_menu.send_keys("Nitrogen Dioxide")
+        self.assertEqual( option.get_attribute("text"), "Carbon Monoxide" )       
 
         # Cornelius sees a drop-down for selecting an area of London. The default value
         # is "All"
@@ -56,12 +52,6 @@ class NewVisitorTest(unittest.TestCase):
         option = geographic_menu.find_element_by_tag_name("option")
         self.assertEqual( option.get_attribute("value"), "all" )
         self.assertEqual( option.text, "All" )
-
-        # He types in "barnet"        
-        # geographic_menu.send_keys("barnet")
-        # time.sleep(1)   # the page will refresh; this 'enforced wait' allows it to render
-
-        # The map re-renders to show this area, at a zoom level of <...??...>
 
         # Cornelius sees a selection box that shows different types of illness. 
         # The default value is <...??...>.  
@@ -77,16 +67,42 @@ class NewVisitorTest(unittest.TestCase):
         illness_info = self.browser.find_element_by_id("info-illness")
         self.assertEqual(
             illness_info.text, "Info about the default illness"
-        )
+        )               
+    
+    def change_default_values(self):
+        # Cornelius opens the homepage
+        self.browser.get("http://localhost:8000")
+
+        # he sees a map and three drop-down menus
+        emissions_map = self.browser.find_element_by_id("map")
+        emissions_menu = self.browser.find_element_by_id("list-emissions")
+        geographic_menu = self.browser.find_element_by_id("list-london-areas")
+        illness_menu = self.browser.find_element_by_id("list-illnesses")
+
+        # Cornelius changes the value in the emissions drop-down to nitrogen dioxide, 
+        # and the map updates to show the new values        
+        emissions_menu.send_keys("Nitrogen Dioxide")
+        time.sleep(1) # pauses the page for a second (useful to view the change)
+
+        # He types in "barnet"        
+        geographic_menu.send_keys("Barnet")
+        time.sleep(1)   
+
+        # The map re-renders to show this area, at a zoom level of <...??...>
 
         # He changes the illness to <...??...>, and the information updates.
-        # illness_menu.send_keys("Emphesema")
-        # time.sleep(1)
+        illness_menu.send_keys("Emphesema")
+        time.sleep(1)
         # illness_info = self.browser.find_element_by_id("info-illness")
         # self.assertEqual(
         #     illness_info.get_attribute("...??..."), "Info about the updated illness"
         # )
-
+        pass
+    
+    def runTest(self):
+        self.open_page_test()
+        self.change_default_values()
+        
         # add a test fail, to remind us to finish the tests
         self.fail("Finish the test")
 
