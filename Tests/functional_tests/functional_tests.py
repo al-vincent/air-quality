@@ -54,7 +54,7 @@ class NewVisitorTest(unittest.TestCase):
         self.assertEqual( option.text, "All" )
 
         # Cornelius sees a selection box that shows different types of illness. 
-        # The default value is <...??...>.  
+        # The default value is asthma
         illness_menu = self.browser.find_element_by_id("list-illnesses")
         # check that the element is a select element
         Select(illness_menu)
@@ -84,13 +84,13 @@ class NewVisitorTest(unittest.TestCase):
         emissions_menu.send_keys("Nitrogen Dioxide")
         time.sleep(1) # pauses the page for a second (useful to view the change)
 
-        # He types in "barnet"        
+        # He selects "barnet" from the drop-down
         geographic_menu.send_keys("Barnet")
         time.sleep(1)   
 
         # The map re-renders to show this area, at a zoom level of <...??...>
 
-        # He changes the illness to <...??...>, and the information updates.
+        # He changes the illness to emphesema, and the information updates.
         illness_menu.send_keys("Emphesema")
         time.sleep(1)
         # illness_info = self.browser.find_element_by_id("info-illness")
