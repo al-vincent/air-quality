@@ -31,12 +31,7 @@
         <!-- map column -->
         <div class="jumbotron col-8">
           <!-- create the div that will hold the map -->
-          <div id="map"></div>
-          <!-- Load the JSON places and the javascript to render the map -->
-          <!-- <script type='text/javascript' src="{% static 'data/places.json' %}"></script>
-          <script src="{% static 'js/index.js' %}"></script> -->
-          <script type='text/javascript' src="/static/data/places.json"></script>
-          <script src="static/js/index.js"></script>
+          <div id="map"></div>          
         </div>
         <!-- map column -->
 
@@ -59,7 +54,7 @@
                   <option value="asthma">Asthma</option>
                   <option value="emphesema">Emphesema</option>
               </select>
-          </div>
+          </div>          
         </div>
         <!-- drop-down options column -->
 
@@ -71,6 +66,10 @@
         <p id="info-illness">Info about the default illness</p>
       </div>
       <!-- illness information row -->
+
+      <!-- Load the javascript to render the map -->
+      <!-- <script src="{% static 'js/index.js' %}"></script> -->
+      <script src="static/js/index.js"></script>
 
     </div>
     <!-- /main body -->     
