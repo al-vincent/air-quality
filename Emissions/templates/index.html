@@ -39,20 +39,23 @@
         <div class="jumbotron col-4">
           <div class="row">
             <select id="list-emissions">
-              <option value="carbon-monoxide">Carbon Monoxide</option>
-              <option value="nitrous-oxide">Nitrogen Dioxide</option>
+              {% for emission in emission_types %}
+                <option value="{{ emission.value }}"">{{ emission.text }}</option>
+              {% endfor %}
             </select>
           </div>
           <div class="row">
               <select id="list-london-areas">
-                  <option value="all">All</option>
-                  <option value="barnet">Barnet</option>
+                {% for area in area_groups %}
+                  <option value="{{ area.value }}">{{ area.text }}</option>
+                {% endfor %}
               </select>
           </div>
           <div class="row">
               <select id="list-illnesses">
-                  <option value="asthma">Asthma</option>
-                  <option value="emphesema">Emphesema</option>
+                {% for illness in illness_types %}
+                  <option value="{{ illness.value }}">{{ illness.text }}</option>
+                {% endfor %}
               </select>
           </div>          
         </div>
