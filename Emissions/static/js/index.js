@@ -63,7 +63,8 @@ function main(){
     // add a series of points ot the map, with randomly-generated intensities
     // console.log(getEmissionsValues(DEFAULT_EMISSIONS));
     heat = L.heatLayer(getEmissionsValues(DEFAULT_EMISSIONS), 
-                            {radius: 15, blur: 5}).addTo(map);               
+                            {radius: 15, blur: 5}).addTo(map); 
+    console.log(heat);
     
     const emissionsList = document.getElementById('list-emissions');
     emissionsList.addEventListener("change", function(){
@@ -74,6 +75,7 @@ function main(){
         heat.remove();
         // plot the new points
         heat = L.heatLayer(newEmissions, {radius: 15, blur: 5}).addTo(map);
+        console.log(heat);
         console.log("map updated");
     });
 }

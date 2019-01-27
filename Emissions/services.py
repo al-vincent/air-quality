@@ -2,7 +2,7 @@
 class SetupData():
     def emission_types(self):
         return [{"value": "carbon-monoxide", "text":"Carbon Monoxide"},
-                {"value": "nitrous-oxide", "text":"Nitrous Oxide"}]
+                {"value": "nitrogen-dioxide", "text":"Nitrogen Dioxide"}]
     
     def area_groups(self):
         return [{"value": "all", "text":"All"},
