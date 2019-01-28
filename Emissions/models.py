@@ -3,7 +3,7 @@ from django.db import models
 # Create your models here.
 class Species(models.Model):
     name = models.TextField(default='')
-    code = models.CharField(max_length=4)
+    code = models.CharField(max_length=4, default='')
     description = models.TextField(default='')
     health_effect = models.TextField(default='')
     link = models.TextField(default='')
