@@ -1,8 +1,8 @@
-import requests
-
-# from Emissions.models import Group, Species
 
 class SetupData():
+    """
+    Series of methods to return dummy data to the application, for testing purposes
+    """
     def emission_types(self):
         return [{"value": "carbon-monoxide", "text":"Carbon Monoxide"},
                 {"value": "nitrogen-dioxide", "text":"Nitrogen Dioxide"}]
@@ -15,36 +15,11 @@ class SetupData():
         return [{"value": "asthma", "text":"Asthma"},
                 {"value": "emphesema", "text":"Emphesema"}]
 
-class PopulateDb():
-    def populate_groups(self):
-        data = self.get_data_from_API("/Information/Groups/Json")
-        if data is not None:
-            for item in data["Groups"]["Group"]:
-                grp = Group.object.create(name=item["@GroupName"],
-                                          description=item["@Description"],
-                                          link=item["@WebsuteURL"])
-                grp.save()
-    
-    def populate_species(self):
-        data = self.get_data_from_API("/Information/Species/Json")
-        if data is not None:
-            for item in data["AirQualitySpecies"]["Species"]:
-                species = Species.object.create(name=item["@SpeciesName"],
-                                                code=item["@SpciesCode"],
-                                                description=item["@Description"],
-                                                health_effect=item["@HealthEffect"],
-                                                link=item["@Link"])
-                species.save()
-    
-    def get_data_from_API(self, url):
-        root = "http://api.erg.kcl.ac.uk/AirQuality"
-        response = requests.get(root + url)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return None
-
 class GetEmissionsData():
+    """
+    Provde lat/long/emission intensity values for a series of emission types.
+    Again, dummy data used for testing.
+    """
     def __init__(self):    
         self.emission_types = [
             {"lat":-37.90295525,"lng":175.4772238333,"carbon-monoxide":0.331566754675031,"nitrogen-dioxide":1},
@@ -79,15 +54,3 @@ class GetEmissionsData():
             {"lat":-37.8983034667,"lng":175.4792230333,"carbon-monoxide":0.17487089909492,"nitrogen-dioxide":1},
             {"lat":-37.8987899833,"lng":175.4796567167,"carbon-monoxide":0.560477608746508,"nitrogen-dioxide":1}
         ]
-
-def main():
-    import os
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'AirQuality.settings')
-    from models import Group, Species
-    pd = PopulateDb()
-    pd.populate_groups()
-    pd.populate_species()
-
-
-if __name__ == "__main__":
-    main()
