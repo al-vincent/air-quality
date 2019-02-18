@@ -1,3 +1,4 @@
+from Emissions.models import Species, Group
 
 class SetupData():
     """
@@ -54,3 +55,12 @@ class GetEmissionsData():
             {"lat":-37.8983034667,"lng":175.4792230333,"carbon-monoxide":0.17487089909492,"nitrogen-dioxide":1},
             {"lat":-37.8987899833,"lng":175.4796567167,"carbon-monoxide":0.560477608746508,"nitrogen-dioxide":1}
         ]
+
+def main():
+    setup = SetupData()
+    grps = setup.area_groups()
+    for grp in grps:
+        print(grp)
+
+if __name__ == "__main__":
+    main()
