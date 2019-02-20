@@ -1,3 +1,18 @@
+##################################################################################
+# This script is used to auto-populate django's automatically-generated sqlite 
+# database (db.sqlite3). This reduces / negates the need for external 'mock-up'
+# data for testing the app, and is a lot faster than updating the db via django's
+# admin interface if more than a few items are to be added.
+#
+# When running the script, follow theses steps;
+#  1. If there's an existing db.sqlite3 file (in the AirQuality project dir),
+#       delete it.
+#  2. In the shell, type the following:
+#   $> python manage.py makemigrations      [Updates the models with any changes]
+#   $> python manage.py migrate             [Creates the database schema]
+#   $> python populate_airquality           [Runs this script to populate the db]
+##################################################################################
+
 # setting these environment variables before anything is run is *essential*!
 import os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'AirQuality.settings')
