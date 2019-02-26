@@ -9,15 +9,14 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 
     {% load static %}
-    <!-- <link href="{% static 'css/styles.css' %}" rel="stylesheet" type="text/css">     -->
-    <!-- <link href="{% static 'lib/css/leaflet.css' %}" rel="stylesheet" type="text/css"> -->
-    <link href="/static/css/styles.css" rel="stylesheet">
-    <link href="/static/lib/css/leaflet.css" rel="stylesheet">
+    <!-- custom styles and leaflet css -->
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'lib/css/leaflet.css' %}" rel="stylesheet" type="text/css">
+    
 		<!-- leaflet javascript -->
-    <!-- <script src="{% static 'lib/js/leaflet.js' %}"></script> -->
-    <!-- <script src="{% static 'lib/js/leaflet-heat.js' %}"></script> -->
-    <script src="/static/lib/js/leaflet.js"></script>
-    <script src="/static/lib/js/leaflet-heat.js"></script>
+    <script src="{% static 'lib/js/leaflet.js' %}"></script>
+    <script src="{% static 'lib/js/leaflet-heat.js' %}"></script>
+  
 
     <title>Air Quality</title>
   </head>
@@ -33,7 +32,7 @@
           <!-- create the div that will hold the map -->
           <div id="map"></div>          
         </div>
-        <!-- map column -->
+        <!-- /map column -->
 
         <!-- drop-down options column -->
         <div class="jumbotron col-4">
@@ -59,7 +58,7 @@
               </select>
           </div>          
         </div>
-        <!-- drop-down options column -->
+        <!-- /drop-down options column -->
 
       </div>
       <!-- /map, drop-down row -->
@@ -70,9 +69,10 @@
       </div>
       <!-- illness information row -->
 
+      <!-- pass the lat/lng data -->
+      {{ geo_data|json_script:"geo-data" }}
       <!-- Load the javascript to render the map -->
-      <!-- <script src="{% static 'js/index.js' %}"></script> -->
-      <script src="static/js/index.js"></script>
+      <script src="{% static 'js/index.js' %}"></script>
 
     </div>
     <!-- /main body -->     
