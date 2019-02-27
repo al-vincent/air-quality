@@ -1,20 +1,169 @@
-from Emissions.models import Species, Group
+import requests, datetime as dt, pandas as pd
+
+BASE_URL = "http://api.erg.kcl.ac.uk/AirQuality"
+DES_PROXY = {'http' : 'http://10.160.27.36:3128'}  
+
+
+def datetime_obj_to_str(dt_obj):
+    """Converts a python datetime object to the format used within the 
+        API calls : Returns string of format DDMonYYY (i.e. 01Jan2000)"""
+        
+    return dt_obj.strftime('%d%b%Y')
+
+
+
 
 class SetupData():
     """
-    Series of methods to return dummy data to the application, for testing purposes
+    Series of methods to return API data to the application. Call SetupData 
+    class with boolean True/False to use the required DES proxy server.
     """
+    
+    def __init__(self, use_DES_proxy = False):
+        if use_DES_proxy == True:
+            self.proxy = DES_PROXY
+        else:
+            self.proxy = None
+            
+        self.default_start_date = datetime_obj_to_str(dt.datetime(2019, 1, 1))
+        self.default_end_date = datetime_obj_to_str(dt.datetime.now()
+                                                    +dt.timedelta(days = 1))
+    
+    def get_data_from_API(self, url, proxy = None):
+        """
+        Get data from the LondonAir API. If a connection cannot be made, print 
+        a message to the console and exit.
+        """
+        
+        try:
+            response = requests.get(BASE_URL + url, proxies = proxy)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                return None
+        except requests.exceptions.ConnectionError:
+            print("No response from LondonAir API server")
+            exit(1) 
+    
+    
+    def get_hourly_site_readings_between(self, site_code, 
+                                         start_date = None, end_date = None):
+        """
+        Takes a site code, a start date, and an end date and recovers the hourly 
+        particulate measurements between these two dates. Format for dates is 
+        DDMonYYYY (01Jan2000); conversion of datetime objects can be done with 
+        the datetime_obj_to_str() func.
+        Returns a pandas Dataframe of the species measurements across the 
+        datetime hours requested."""
+        
+        start_date = start_date if start_date is not None else self.default_start_date
+        end_date = end_date if end_date is not None else self.default_end_date
+        
+        URL = ("/Data/Site/SiteCode="+str(site_code) +"/StartDate="+str(start_date)
+                +"/EndDate="+str(end_date)+'/Json')
+                        
+        data = self.get_data_from_API(URL, self.proxy)
+        if data is not None:
+            hourly_data = data['AirQualityData']['Data']
+            species = list(set([i['@SpeciesCode'] for i in hourly_data]))
+            species_length = int(len(hourly_data) / len(species))
+            
+            spec_data = [hourly_data[spec*species_length:(spec*species_length)
+                        +species_length] for spec in range(len(species))]
+            
+            hourly_df = pd.DataFrame(pd.Series(sorted(list(set(
+                        [i['@MeasurementDateGMT'] for i in hourly_data])))))
+            
+            for spec in range(len(species)):
+                values = [str(i['@Value']) for i in spec_data[spec]]
+                hourly_df[species[spec]] = pd.Series(values)
+                
+            cols = list(hourly_df.columns)
+            cols[0] = 'MeasurementDate'
+            hourly_df.columns = cols
+            return hourly_df.to_dict('records')
+    
+    
+    def get_daily_index_latest(self, site_code):
+        """
+        Takes a site code, recovers the most current health index rating for that 
+        site. 
+        
+        Returns a pandas DataFrame of the different species measured at that 
+        site, includes the most current index, which band that falls under, the 
+        index source, the species code, and the species name.
+        """
+        
+        URL = "/Daily/MonitoringIndex/Latest/SiteCode="+str(site_code)+"/Json"
+        data = self.get_data_from_API(URL, self.proxy)
+        if data is not None:
+            daily_index_latest = (data['DailyAirQualityIndex']['LocalAuthority']
+                                    ["Site"]["Species"])
+            
+            keys = list(daily_index_latest[0].keys())
+            daily_index_latest = [{k.strip('@') : species[k] for k in keys} 
+                                    for species in daily_index_latest]
+            return daily_index_latest
+            
+            
+    
+    def get_daily_index_on_date(self, site_code, date):
+        """
+        Takes a site code, and a date, and recovers the hourly 
+        particulate measurements between these two dates. Format for dates is 
+        DDMonYYYY (01Jan2000); conversion of datetime objects can be done with 
+        the self.datetime_obj_to_str() func.
+        
+        Returns a pandas DataFrame of the different species measured at that 
+        site, includes the most current index, which band that falls under, the 
+        index source, the species code, and the species name.
+        """
+        
+        if type(date) == dt.datetime:
+            date = self.datetime_obj_to_str(date)
+        URL = "/Daily/MonitoringIndex/SiteCode="+str(site_code)+"/Date="+str(date)+"/Json"
+        data = self.get_data_from_API(URL, self.proxy)
+        if data is not None:
+            daily_index_dated = (data['DailyAirQualityIndex']['LocalAuthority']
+                                ["Site"]["Species"])
+            keys = list(daily_index_dated[0].keys())
+            daily_index_dated = [{k.strip('@') : species[k] for k in keys} 
+                                    for species in daily_index_dated]
+            return daily_index_dated
+            
+    
+    def nowcast(self, lat, long):
+        """
+        Takes a latitude and longitude, and interpolates between nearby measurement 
+        sites. 
+        
+        Returns a dictionary with keys:
+        ['@lat', '@lon', '@Easting', '@Northing', '@NO2_Annual', '@O3_Annual', 
+        '@PM10_Annual', '@PM25_Annual', '@NO2', '@O3', '@PM10', '@PM25', 
+        '@NO2_Index', '@O3_Index', '@PM10_Index', '@PM25_Index', '@Max_Index']
+        """
+        URL = "/Data/Nowcast/lat="+str(lat)+"/lon="+str(long)+"/Json"
+        data = self.get_data_from_API(URL)
+        if data is not None:
+            return data['PointResult']
+
+    
+
     def emission_types(self):
+        #need to replace call in templates/Emissions/index.html
         return [{"value": "carbon-monoxide", "text":"Carbon Monoxide"},
                 {"value": "nitrogen-dioxide", "text":"Nitrogen Dioxide"}]
-    
+        
     def area_groups(self):
-        return [{"value": "all", "text":"All"},
-                {"value": "barnet", "text":"Barnet"}]
+        #need to replace call in templates/Emissions/index.html
+        return [{"value": "all", "text": "All"},
+                {"value": "barnet", "text": "Barnet"}]
     
     def illness_types(self):
         return [{"value": "asthma", "text":"Asthma"},
                 {"value": "emphesema", "text":"Emphesema"}]
+
+        
 
 class GetEmissionsData():
     """
@@ -57,10 +206,10 @@ class GetEmissionsData():
         ]
 
 def main():
-    setup = SetupData()
-    grps = setup.area_groups()
-    for grp in grps:
-        print(grp)
-
+    setup = SetupData(use_DES_proxy = False)
+    a = setup.nowcast('51.563752', '0.177891')    
+    return a
+    
 if __name__ == "__main__":
-    main()
+    a = main()
+    
