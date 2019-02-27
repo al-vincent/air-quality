@@ -9,70 +9,129 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 
     {% load static %}
-    <!-- <link href="{% static 'css/styles.css' %}" rel="stylesheet" type="text/css">     -->
-    <!-- <link href="{% static 'lib/css/leaflet.css' %}" rel="stylesheet" type="text/css"> -->
-    <link href="/static/css/styles.css" rel="stylesheet">
-    <link href="/static/lib/css/leaflet.css" rel="stylesheet">
+    <!-- custom styles and leaflet css -->
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'lib/css/leaflet.css' %}" rel="stylesheet" type="text/css">
+    
 		<!-- leaflet javascript -->
-    <!-- <script src="{% static 'lib/js/leaflet.js' %}"></script> -->
-    <!-- <script src="{% static 'lib/js/leaflet-heat.js' %}"></script> -->
-    <script src="/static/lib/js/leaflet.js"></script>
-    <script src="/static/lib/js/leaflet-heat.js"></script>
+    <script src="{% static 'lib/js/leaflet.js' %}"></script>
+    <script src="{% static 'lib/js/leaflet-heat.js' %}"></script>
+  
 
     <title>Air Quality</title>
   </head>
   <body>
+    <!-- Navbar and nav options -->
+		<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+      <!-- always-visible logo / branding -->
+      <a class="navbar-brand" href="#">AppName</a>
+        <!-- Toggler/collapsible Button -->
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsible-navbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <!-- /always-visible logo / branding -->
+
+      <!-- collapsible navbar section -->
+      <!-- the below will convert to a burger menu automatically for small screens -->
+      <div class="collapse navbar-collapse" id="collapsible-navbar">
+        <ul class="navbar-nav">
+          <li class="nav-item active">
+            <a class="nav-link" href="#map">Map</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#info-illness">Illness Information</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#info-emissions">Emissions Information</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Register</a>
+          </li>
+        </ul>
+      </div>
+      <!-- /collapsible navbar section -->
+    </nav>
+    <!-- /Navbar -->
+
+    <!-- main body -->
     <div class="container">
-      <!-- main body -->
 
-      <!-- map, drop-down row -->
-      <div class="row">
-        
-        <!-- map column -->
-        <div class="jumbotron col-8">
-          <!-- create the div that will hold the map -->
-          <div id="map"></div>          
-        </div>
-        <!-- map column -->
+      <!-- drop-down, map group -->
+      <div class=" jumbotron">
 
-        <!-- drop-down options column -->
-        <div class="jumbotron col-4">
-          <div class="row">
-            <select id="list-emissions">
+        <!-- drop-down menus row -->
+        <div class="form-row">
+          <!-- emissions drop-down -->
+          <div class="col-lg-4 col-sm-12">
+            <label for="list-emissions">Emission type</label>
+            <select id="list-emissions" class="form-control">
               {% for emission in emission_types %}
                 <option value="{{ emission.value }}">{{ emission.text }}</option>
               {% endfor %}
             </select>
           </div>
-          <div class="row">
-              <select id="list-london-areas">
+          <!-- /emissions drop-down -->
+
+          <!-- locations drop-down -->
+          <div class="col-lg-4 col-sm-12">
+              <label for="list-london-areas">Area to view</label>
+              <select id="list-london-areas" class="form-control">
                 {% for area in area_groups %}
                   <option value="{{ area.value }}">{{ area.text }}</option>
                 {% endfor %}
               </select>
           </div>
-          <div class="row">
-              <select id="list-illnesses">
+          <!-- /locations drop-down -->
+
+          <!-- illnesses drop-down -->
+          <div class="col-lg-4 col-sm-12">
+              <label for="list-illnesses">Illness affected</label>
+              <select id="list-illnesses" class="form-control">
                 {% for illness in illness_types %}
                   <option value="{{ illness.value }}">{{ illness.text }}</option>
                 {% endfor %}
               </select>
-          </div>          
+          </div>
+          <!-- /illnesses drop-down -->
         </div>
-        <!-- drop-down options column -->
+        <!-- /drop-down menus row -->
+
+        <!-- map  -->
+        <div class="row">
+          <div class="col-12">
+            <!-- create the div that will hold the map -->
+            <div id="map"></div>          
+          </div>
+        </div>
+        <!-- /map -->
 
       </div>
-      <!-- /map, drop-down row -->
-       
-      <!-- illness information row -->
-      <div class="row">
-        <p id="info-illness">Info about the default illness</p>
+      <!-- drop-down, map group -->
+
+      <!-- illness information group -->
+      <div class="jumbotron">
+        <div class="row">
+          <h3 id="info-illness">Info about the default illness</h3>
+        </div>
       </div>
       <!-- illness information row -->
 
+      <!-- emissions information group -->
+      <div class="jumbotron">
+        <div class="row">
+          <h3 id="info-emissions">Info about the emission selected</h3>
+        </div>
+      </div>
+      <!-- emissions information group -->
+
+      <!-- LEAVE THIS 'TIL LAST!! -->
+      <!-- pass the lat/lng data -->
+      {{ geo_data|json_script:"geo-data" }}
       <!-- Load the javascript to render the map -->
-      <!-- <script src="{% static 'js/index.js' %}"></script> -->
-      <script src="static/js/index.js"></script>
+      <script src="{% static 'js/index.js' %}"></script>
 
     </div>
     <!-- /main body -->     

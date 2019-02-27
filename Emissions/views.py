@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from Emissions.services import SetupData
+from Emissions.services import SetupData, GetEmissionsData
 from Emissions.models import Group, Species
 
 def index(request):
@@ -9,10 +9,12 @@ def index(request):
     """
     # get placeholder data
     data = SetupData()
+    geo_data = GetEmissionsData().emission_types
     # get a list of groups from db, removing the first 12 (non-London)
     grps = [{"value":grp.name, "text":grp.description} for grp in Group.objects.all().filter(id__gt=11)]
     # get a list of species from db
     species = [{"value":sp.code, "text":sp.name} for sp in Species.objects.all()]
     return render(request, "Emissions/index.html", {"emission_types": species,
                                                     "area_groups": grps,
-                                                    "illness_types": data.illness_types() })
+                                                    "illness_types": data.illness_types(), 
+                                                    "geo_data": geo_data})
