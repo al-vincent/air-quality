@@ -1,17 +1,38 @@
-import requests, datetime as dt, pandas as pd
+# TODOs:
+# - Update any methods where the return-type is a Pandas dataframe, to either a 
+#   dict or JSON
+#   -- Consider; do we need Pandas at all here? Can we only import it to specific fncs?
+# - Get rid of all '@'s in returns; just weird and confusing
+# - More generally; for our app, would be more DRY to have a config file containing 
+#   mappings of API headers to variable names, that we can use across the app?
+#   -- Could it go into settings.py? Need to check we're not accidentally overriding 
+#       reserved names!
+# - Will need a method that takes a site (or list of sites), an emission type and a 
+#   date-range and returns the relevant intensity
+# - Setup logging (e.g. when the API isn't available)
+
+import datetime as dt
+import requests
+import pandas as pd
 
 BASE_URL = "http://api.erg.kcl.ac.uk/AirQuality"
-DES_PROXY = {'http' : 'http://10.160.27.36:3128'}  
-
+DES_PROXY = {'http' : 'http://10.160.27.36:3128'}
+DEFAULT_START_DATE = "01Jan2019"
 
 def datetime_obj_to_str(dt_obj):
-    """Converts a python datetime object to the format used within the 
-        API calls : Returns string of format DDMonYYY (i.e. 01Jan2000)"""
+    """
+    Converts a python datetime object to the format used within the LondonAir API.
+
+    Parameters:
+    - dt_obj (python datetime object), a datetime to be converted
+
+    Returns:
+    - string of format DDMonYYY (i.e. 01Jan2000)
+    """
         
     return dt_obj.strftime('%d%b%Y')
 
-
-
+DEFAULT_END_DATE =  datetime_obj_to_str(dt.datetime.now() + dt.timedelta(days = 1))
 
 class SetupData():
     """
@@ -19,20 +40,30 @@ class SetupData():
     class with boolean True/False to use the required DES proxy server.
     """
     
-    def __init__(self, use_DES_proxy = False):
+    def __init__(self, use_DES_proxy=False):
+        # *********************
+        # AV: Luke - this use_DES_proxy var is a good idea, and works well for DES (obvs!).
+        # A more general case though would be to replace the boolean flag with a setting for 
+        # users who are behind *any* proxy; we could also build a simple interface to let 
+        # them enter the details...?
+        # *********************
         if use_DES_proxy == True:
             self.proxy = DES_PROXY
         else:
             self.proxy = None
-            
-        self.default_start_date = datetime_obj_to_str(dt.datetime(2019, 1, 1))
-        self.default_end_date = datetime_obj_to_str(dt.datetime.now()
-                                                    +dt.timedelta(days = 1))
     
-    def get_data_from_API(self, url, proxy = None):
+    def get_data_from_API(self, url, proxy=None):
         """
         Get data from the LondonAir API. If a connection cannot be made, print 
         a message to the console and exit.
+
+        Parameters:
+        - url (str), the URL containing the API data
+        - proxy (str), a URL containing the address of a proxy server. Optional, default None
+
+        Returns:
+        - a JSON structure containing the data provided by the API; or None if the request 
+        failed (e.g. due to a connection error, or an error with the URL provided)
         """
         
         try:
@@ -42,23 +73,33 @@ class SetupData():
             else:
                 return None
         except requests.exceptions.ConnectionError:
+            # placeholder at present; ideally; this would be logged to file (rather than 
+            # printed to console).
             print("No response from LondonAir API server")
-            exit(1) 
-    
+            return None
     
     def get_hourly_site_readings_between(self, site_code, 
-                                         start_date = None, end_date = None):
+                                         start_date=DEFAULT_START_DATE, 
+                                         end_date=DEFAULT_END_DATE):
         """
-        Takes a site code, a start date, and an end date and recovers the hourly 
-        particulate measurements between these two dates. Format for dates is 
-        DDMonYYYY (01Jan2000); conversion of datetime objects can be done with 
-        the datetime_obj_to_str() func.
-        Returns a pandas Dataframe of the species measurements across the 
-        datetime hours requested."""
+        Provides measurements of all particulates for a specific sites on an hourly basis,
+        over a defined time window.
         
-        start_date = start_date if start_date is not None else self.default_start_date
-        end_date = end_date if end_date is not None else self.default_end_date
+        Parameters:
+        - site_code (str), a 3(?)-character code for the site that's being queried, e.g. 'TDO'
+        - start_date (str), the start date of the time window we want data for. Format is 
+        DDMonYYYY, e.g. 01Jan2000. Optional; default is 01Jan2019.
+        - end_date (str), the end date of the time window we want data for. Format is 
+        DDMonYYYY, e.g. 01Jan2000. Optional; default is the current date.
         
+        Returns:
+        - a pandas Dataframe of the species measurements across the 
+        datetime hours requested.
+
+        Note: conversion to the correct format can be done via the datetime_obj_to_str
+        convenience function.
+        """        
+                
         URL = ("/Data/Site/SiteCode="+str(site_code) +"/StartDate="+str(start_date)
                 +"/EndDate="+str(end_date)+'/Json')
                         
@@ -86,11 +127,14 @@ class SetupData():
     
     def get_daily_index_latest(self, site_code):
         """
-        Takes a site code, recovers the most current health index rating for that 
-        site. 
+        Provides the most current health index rating for a particular site. 
+
+        Parameters:
+        - site_code (str), a 3(?)-digit code for the site that's being queried.
         
-        Returns a pandas DataFrame of the different species measured at that 
-        site, includes the most current index, which band that falls under, the 
+        Returns: 
+        - Pandas DataFrame of the different species measured at that 
+        site. Includes the most current index, which band that falls under, the 
         index source, the species code, and the species name.
         """
         
@@ -105,22 +149,30 @@ class SetupData():
                                     for species in daily_index_latest]
             return daily_index_latest
             
-            
-    
     def get_daily_index_on_date(self, site_code, date):
         """
-        Takes a site code, and a date, and recovers the hourly 
-        particulate measurements between these two dates. Format for dates is 
-        DDMonYYYY (01Jan2000); conversion of datetime objects can be done with 
-        the self.datetime_obj_to_str() func.
+        Gets the hourly particulate measurements for a given date. 
         
-        Returns a pandas DataFrame of the different species measured at that 
-        site, includes the most current index, which band that falls under, the 
-        index source, the species code, and the species name.
+        Format for dates is 
+        DDMonYYYY (01Jan2000); conversion of datetime objects can be done with 
+        the datetime_obj_to_str() func.
+
+        Parameters:
+        - site_code (str), a 3(?)-character code for the site that's being queried, e.g. 'TDO'
+        - date (str), the start date of the time window we want data for. Format is 
+        DDMonYYYY, e.g. 01Jan2000. Optional; default is 01Jan2019.
+                
+        Returns: 
+            a pandas DataFrame of each of the different species measured at that site. 
+            Includes the most current index, which band that falls under, the index source, 
+            the species code, and the species name.
+
+        Note: conversion to the correct format can be done via the datetime_obj_to_str
+        convenience function.
         """
         
         if type(date) == dt.datetime:
-            date = self.datetime_obj_to_str(date)
+            date = datetime_obj_to_str(date)
         URL = "/Daily/MonitoringIndex/SiteCode="+str(site_code)+"/Date="+str(date)+"/Json"
         data = self.get_data_from_API(URL, self.proxy)
         if data is not None:
@@ -134,10 +186,15 @@ class SetupData():
     
     def nowcast(self, lat, long):
         """
-        Takes a latitude and longitude, and interpolates between nearby measurement 
-        sites. 
+        For a specific point, will get data from the nearest emissions collection 
+        points and interpolate to provide an estimate of the emissions at that point.
+
+        Parameters:
+            - lat (float), a decimal(?) latitude value
+            - long (float), a decimal(?) longitude value
         
-        Returns a dictionary with keys:
+        Returns:
+        - a dictionary with keys:
         ['@lat', '@lon', '@Easting', '@Northing', '@NO2_Annual', '@O3_Annual', 
         '@PM10_Annual', '@PM25_Annual', '@NO2', '@O3', '@PM10', '@PM25', 
         '@NO2_Index', '@O3_Index', '@PM10_Index', '@PM25_Index', '@Max_Index']
@@ -147,7 +204,7 @@ class SetupData():
         if data is not None:
             return data['PointResult']
 
-    
+
 
     def emission_types(self):
         #need to replace call in templates/Emissions/index.html

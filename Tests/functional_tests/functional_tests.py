@@ -40,7 +40,7 @@ class NewVisitorTest(unittest.TestCase):
         option = emissions_menu.find_element_by_tag_name("option")
         # test for both the 'value' attribute and the 'text' attribute
         # (not required, but useful syntax!)
-        self.assertEqual( option.get_attribute("value"), "carbon-monoxide" )
+        self.assertEqual( option.get_attribute("value"), "CO" )
         self.assertEqual( option.get_attribute("text"), "Carbon Monoxide" )       
 
         # Cornelius sees a drop-down for selecting an area of London. The default value
@@ -50,8 +50,8 @@ class NewVisitorTest(unittest.TestCase):
         Select(geographic_menu)
         # get the first option in the list
         option = geographic_menu.find_element_by_tag_name("option")
-        self.assertEqual( option.get_attribute("value"), "all" )
-        self.assertEqual( option.text, "All" )
+        self.assertEqual( option.get_attribute("value"), "adur" )
+        self.assertEqual( option.text, "Adur" )
 
         # Cornelius sees a selection box that shows different types of illness. 
         # The default value is asthma
@@ -66,8 +66,14 @@ class NewVisitorTest(unittest.TestCase):
         # Information about this illness is shown further down the page.
         illness_info = self.browser.find_element_by_id("info-illness")
         self.assertEqual(
-            illness_info.text, "Info about the default illness"
-        )               
+            illness_info.text, "Info about the illness selected"
+        )
+
+        # Information about the emissions type is shown further down again.
+        illness_info = self.browser.find_element_by_id("info-emissions")
+        self.assertEqual(
+            illness_info.text, "Info about the emission selected"
+        )
     
     def change_default_values(self):
         # Cornelius opens the homepage
