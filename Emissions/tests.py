@@ -2,6 +2,26 @@ from django.test import TestCase, Client
 
 from Emissions.views import index
 from Emissions.models import Species
+from Emissions.services import SetupData
+
+class ServicesTest(TestCase):
+    pass
+    # Add tests for the following:
+    # - datetime_obj_to_string
+    #     -- try a few correct examples, check returns
+    #     -- try a few incorrect examples; handling?
+    #     -- what's the date range? Should we set a global min (e.g. date when 
+    #        data collection first started)?
+    # - SetupPage()
+    #     -- does the constructor work properly? Test with arg=True, False, None
+    #     -- get_data_from_API; test with actual API and sample data, no URL,
+    #     incorrect root URL, incorrect stem URL [Note; case where URLs are valid,
+    #     but pointing to an XML or CSV source is not currently handled?]
+    #     -- get_hourly_site_readings; test with correct API against sample data;
+    #     site code not supplied; start_date not supplied; end_date not supplied; 
+    #     whether the pivot behaves as expected; do columns rename correctly;
+    #     whether no data from API returns None from the function
+    #     -- get_daily_index_on_date...
 
 class HomePageTest(TestCase):
 

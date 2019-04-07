@@ -15,7 +15,8 @@
     
 		<!-- leaflet javascript -->
     <script src="{% static 'lib/js/leaflet.js' %}"></script>
-    <script src="{% static 'lib/js/leaflet-heat.js' %}"></script>
+    <script src="{% static 'lib/js/heatmap.min.js' %}"></script>
+    <script src="{% static 'lib/js/leaflet-heatmap.js' %}"></script>
   
 
     <title>Air Quality</title>
@@ -128,7 +129,7 @@
       <!-- emissions information group -->
 
       <!-- LEAVE THIS 'TIL LAST!! -->
-      <!-- pass the lat/lng data -->
+      <!-- pass the emissions data -->
       {{ geo_data|json_script:"geo-data" }}
       <!-- Load the javascript to render the map -->
       <script src="{% static 'js/index.js' %}"></script>

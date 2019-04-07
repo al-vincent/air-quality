@@ -65,7 +65,7 @@ class Site(models.Model):
 #    so2_measure_end = models.DateTimeField(default='')
 
     def __str__(self):
-        return f"{self.name}, {self.description} ({self.link})"
+        return f"{self.name} ({self.code}), {self.local_auth}"
 
 
 class HealthAdvice(models.Model):
@@ -76,7 +76,7 @@ class HealthAdvice(models.Model):
     advice_at_risk = models.TextField(default='')
     
     def __str__(self):
-        return f"{self.name}, {self.description} ({self.link})"
+        return f"{self.quality_band}, {self.lower_index} - {self.upper_index}"
 
 class Objective(models.Model):
     """Return from the objectives call has a variable number of entries for 

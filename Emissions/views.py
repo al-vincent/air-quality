@@ -9,7 +9,7 @@ def index(request):
     """
     # get placeholder data
     data = SetupData()
-    geo_data = GetEmissionsData().emission_types
+    # geo_data = GetEmissionsData().emission_types
     # get a list of groups from db, removing the first 12 (non-London)
     grps = [{"value":grp.name, "text":grp.description} for grp in Group.objects.all().filter(id__gt=11)]
     # get a list of species from db
@@ -17,4 +17,4 @@ def index(request):
     return render(request, "Emissions/index.html", {"emission_types": species,
                                                     "area_groups": grps,
                                                     "illness_types": data.illness_types(), 
-                                                    "geo_data": geo_data})
+                                                    "geo_data": data.get_emissions_across_london()})
