@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 
 from Emissions.views import index
 from Emissions.models import Species
-from Emissions.services import SetupData
+from Emissions.services import AirQualityApiData
 
 class ServicesTest(TestCase):
     pass

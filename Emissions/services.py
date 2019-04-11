@@ -36,7 +36,7 @@ def datetime_obj_to_str(dt_obj):
 
 DEFAULT_END_DATE =  datetime_obj_to_str(dt.datetime.now() + dt.timedelta(days = 1))
 
-class SetupData():
+class AirQualityApiData:
     """
     Series of methods to return API data to the application. Call SetupData 
     class with boolean True/False to use the required DES proxy server.
@@ -288,67 +288,32 @@ class SetupData():
         else:
             return None
 
-    def emission_types(self):
-        #need to replace call in templates/Emissions/index.html
-        return [{"value": "carbon-monoxide", "text":"Carbon Monoxide"},
-                {"value": "nitrogen-dioxide", "text":"Nitrogen Dioxide"}]
-        
-    def area_groups(self):
-        #need to replace call in templates/Emissions/index.html
-        return [{"value": "all", "text": "All"},
-                {"value": "barnet", "text": "Barnet"}]
-    
+    def get_all_emissions_info(self):
+        URL = f"/Information/Species/Json"
+        data = self.get_data_from_API(URL)
+        if data is not None:
+            species_info = data['AirQualitySpecies']['Species']
+            keys = list(species_info[0].keys())
+            return [{k.strip('@') : species[k] for k in keys} for species in species_info]
+        else:
+            return None
+
     def illness_types(self):
         return [{"value": "asthma", "text":"Asthma"},
                 {"value": "emphesema", "text":"Emphesema"}]
 
-class GetEmissionsData():
-    """
-    Provde lat/long/emission intensity values for a series of emission types.
-    Again, dummy data used for testing.
-    """
-    def __init__(self):    
-        self.emission_types = [
-            {"lat":51.30295525,"lng":-0.24772238333,"CO":0.331566754675031,"NO2":1},
-            {"lat":51.3155634,"lng":-0.247150915,"CO":0.0553410958886463,"NO2":1},
-            {"lat":51.3077980667,"lng":-0.24749606833,"CO":0.0892525576065953,"NO2":1},
-            {"lat":51.3024718333,"lng":-0.247689145,"CO":0.590075732442714,"NO2":1},
-            {"lat":51.3010265333,"lng":-0.24781286667,"CO":0.15434154031539,"NO2":1},
-            {"lat":51.3051546167,"lng":-0.24761810167,"CO":0.545913378087492,"NO2":1},
-            {"lat":51.3027743667,"lng":-0.24772973,"CO":0.633489041919876,"NO2":1},
-            {"lat":51.3113692333,"lng":-0.24732625,"CO":0.266503161072438,"NO2":1},
-            {"lat":51.3061175,"lng":-0.24761095667,"CO":0.276762853991245,"NO2":1},
-            {"lat":51.3126536833,"lng":-0.24718492,"CO":0.1891805552013,"NO2":1},
-            {"lat":51.49984655,"lng":-0.247884775,"CO":0.0675455473384583,"NO2":1},
-            {"lat":51.4996625,"lng":-0.24783593833,"CO":0.0330886810539454,"NO2":1},
-            {"lat":51.3096838,"lng":-0.24734820333,"CO":0.555126115173718,"NO2":1},
-            {"lat":51.3163971333,"lng":-0.24703382333,"CO":0.825905559386503,"NO2":1},
-            {"lat":51.3019659333,"lng":-0.247801565,"CO":0.96350573450757,"NO2":1},
-            {"lat":51.3017677,"lng":-0.24778972667,"CO":0.655546251121835,"NO2":1},
-            {"lat":51.3082934833,"lng":-0.24747193,"CO":0.668460695656423,"NO2":1},
-            {"lat":51.3124935167,"lng":-0.24721662833,"CO":0.62742638749223,"NO2":1},
-            {"lat":51.3112822667,"lng":-0.24727057,"CO":0.488621588652691,"NO2":1},
-            {"lat":51.3088314833,"lng":-0.24744561333,"CO":0.761584090132723,"NO2":1},
-            {"lat":51.3140193667,"lng":-0.24723065,"CO":0.893369510759159,"NO2":1},
-            {"lat":51.3151048833,"lng":-0.24715047667,"CO":0.330237470617188,"NO2":1},
-            {"lat":51.3155721667,"lng":-0.24712705333,"CO":0.846069812688032,"NO2":1},
-            {"lat":51.31564375,"lng":-0.24698925833,"CO":0.382826719439399,"NO2":1},
-            {"lat":51.3157315333,"lng":-0.24712060333,"CO":0.0212573374476552,"NO2":1},
-            {"lat":51.3158956833,"lng":-0.24711298667,"CO":0.495373866646281,"NO2":1},
-            {"lat":51.3044821667,"lng":-0.24765082167,"CO":0.802100320556479,"NO2":1},
-            {"lat":51.3045073333,"lng":-0.24759204333,"CO":0.766882008309998,"NO2":1},
-            {"lat":51.3046759167,"lng":-0.24758561667,"CO":0.970506803458753,"NO2":1},
-            {"lat":51.4983034667,"lng":-0.24792230333,"CO":0.17487089909492,"NO2":1},
-            {"lat":51.4987899833,"lng":-0.24796567167,"CO":0.560477608746508,"NO2":1}
-        ]
-
 def main():
-    setup = SetupData(use_DES_proxy = False)
+    setup = AirQualityApiData(use_DES_proxy = False)
+
     ldn = setup.get_emissions_across_london()
     df = pd.DataFrame(ldn)
+    print("\nEmissions across London\n-----------------------")
     print(df.head())
-    print(f"Min lat: {df['Latitude'].min()}, Max lat: {df['Latitude'].max()}")
-    print(f"Min lng: {df['Longitude'].min()}, Max lng: {df['Longitude'].max()}")
+
+    e = setup.get_all_emissions_info()
+    df = pd.DataFrame(e)
+    print("\nEmissions info\n--------------")
+    print(df.head())
     
 if __name__ == "__main__":
     main()

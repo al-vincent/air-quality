@@ -1,7 +1,8 @@
 "use strict";
 
 // lat, lng, intensity for different types of emissions
-const EMISSION_TYPES = JSON.parse(document.getElementById('geo-data').textContent);
+const EMISSION_LEVELS = JSON.parse(document.getElementById('geo-data-id').textContent);
+const EMISSION_INFO = JSON.parse(document.getElementById('emissions-info-id').textContent);
 
 // default values for drop-down menus
 const DEFAULT_EMISSIONS = "Nitrogen Dioxide"; 
@@ -25,14 +26,30 @@ const MIN_LNG = -0.461, MAX_LNG = 0.206;
  */
 function getEmissionsValues(emissionsType){
     let newData = [];
-    for(let i = 0; i < EMISSION_TYPES.length; i++){
-        if(EMISSION_TYPES[i][emissionsType] !== null){
-            newData.push({"lat": EMISSION_TYPES[i]["Latitude"], 
-                          "lng": EMISSION_TYPES[i]["Longitude"], 
-                          "value": EMISSION_TYPES[i][emissionsType]});
+    for(let i = 0; i < EMISSION_LEVELS.length; i++){
+        if(EMISSION_LEVELS[i][emissionsType] !== null){
+            newData.push({"lat": EMISSION_LEVELS[i]["Latitude"], 
+                          "lng": EMISSION_LEVELS[i]["Longitude"], 
+                          "value": EMISSION_LEVELS[i][emissionsType]});
         }
     }
     return { max: 1, data: newData };
+}
+
+function getEmissionsInfo(emissionsType){
+    for(let i = 0; i < EMISSION_INFO.length; i++){
+        if(EMISSION_INFO[i]['SpeciesName'] === emissionsType){
+            return EMISSION_INFO[i];
+        }
+    }
+    return null;
+}
+
+function changeEmissionsInfoElements(emissionInfo){
+    document.getElementById('info-emissions').innerHTML = emissionInfo['SpeciesName'];
+    document.getElementById('description-emissions').innerHTML = emissionInfo['Description'];
+    document.getElementById('health-effect-emissions').innerHTML = emissionInfo['HealthEffect'];
+    document.getElementById('link-emissions').innerHTML = emissionInfo['Link'];
 }
 
 // ***************************************************************************************************
@@ -127,6 +144,9 @@ function main(){
     // initialise the heatmap with data from API
     heatmapLayer.setData(getEmissionsValues(DEFAULT_EMISSIONS));
 
+    // change the text of the emissions elements to be about emission we're looking at
+    changeEmissionsInfoElements(getEmissionsInfo(DEFAULT_EMISSIONS));
+
     // ----------------------------------------------------------------------------------------------
     // Add an event listener, to update the map when the list-emissions drop-down changes
     // ----------------------------------------------------------------------------------------------
@@ -134,9 +154,14 @@ function main(){
     emissionsList.addEventListener("change", function(){
         // listen for a change in the emissions drop-down
         const newEmissionsType = document.getElementById('list-emissions').selectedOptions[0].text;
-        // get the new intensities
+        
+        // get the new emissions intensities
         heatmapLayer.setData(getEmissionsValues(newEmissionsType));
         console.log("map updated - change to " + newEmissionsType);
+
+        // update the text of the emissions elements 
+        changeEmissionsInfoElements(getEmissionsInfo(newEmissionsType));
+
     });
 }
 
