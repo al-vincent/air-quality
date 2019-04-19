@@ -5,7 +5,8 @@ const EMISSION_LEVELS = JSON.parse(document.getElementById('geo-data-id').textCo
 const EMISSION_INFO = JSON.parse(document.getElementById('emissions-info-id').textContent);
 
 // default values for drop-down menus
-const DEFAULT_EMISSIONS = "Nitrogen Dioxide"; 
+const DEFAULT_EMISSIONS = "Nitrogen Dioxide";
+const DEFAULT_CODE = "NO2";
 const DEFAULT_ILLNESS = "asthma";
 
 // get bounding box for London
@@ -142,6 +143,7 @@ function main(){
         ]);
     } 
     // initialise the heatmap with data from API
+    document.getElementById('list-emissions').value = DEFAULT_CODE;
     heatmapLayer.setData(getEmissionsValues(DEFAULT_EMISSIONS));
 
     // change the text of the emissions elements to be about emission we're looking at

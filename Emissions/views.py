@@ -17,4 +17,4 @@ def index(request):
                                                     "emissions_info": data.get_all_emissions_info(),
                                                     "area_groups": grps,
                                                     "illness_types": data.illness_types(), 
-                                                    "geo_data": data.get_emissions_across_london()})
+                                                    "geo_data": data.get_current_emissions_across_london()})

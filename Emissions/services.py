@@ -139,37 +139,61 @@ class AirQualityApiData:
 
         return row
 
-    def get_emissions_across_london(self, group_name="London"):
+    def process_group_emissions(self, group_data, field1, field2):
+        output_data = []
+        for la in group_data[field1][field2]:
+            # some local authorities don't actually have any collection sites
+            if 'Site' in la:
+                # print(la["@LocalAuthorityName"])
+                # case where the LA has more than 1 collection site
+                if isinstance(la['Site'], list):
+                    for site in la['Site']:
+                        row = self.setup_row_dict(site, la["@LocalAuthorityName"]) 
+                        output_data.append(self.update_site_species_info(site, row))
+                # case where the LA has exactly 1 collection site
+                elif isinstance(la['Site'], dict):
+                    site = la['Site']       # don't really need this, but for consistency with above
+                    row = self.setup_row_dict(site, la["@LocalAuthorityName"])
+                    output_data.append(self.update_site_species_info(site, row))
+                # something's gone wrong...!
+                else:
+                    row = None
+                    print(f"Unexpected site type: site info = {site}, {type(site)}")                        
+        
+        return output_data
+
+    def get_current_emissions_across_london(self, group_name="London"):
         """
         Get current emissions values for all London sites (no interpolation), for 
         all emissions types
         """
         URL = f"/Hourly/MonitoringIndex/GroupName={group_name}/Json"
         data = self.get_data_from_API(URL)
-        output_data = []
         if data is not None:
-            for la in data['HourlyAirQualityIndex']['LocalAuthority']:
-                # some local authorities don't actually have any collection sites
-                if 'Site' in la:
-                    # print(la["@LocalAuthorityName"])
-                    # case where the LA has more than 1 collection site
-                    if isinstance(la['Site'], list):
-                        for site in la['Site']:
-                            row = self.setup_row_dict(site, la["@LocalAuthorityName"]) 
-                            output_data.append(self.update_site_species_info(site, row))
-                    # case where the LA has exactly 1 collection site
-                    elif isinstance(la['Site'], dict):
-                        site = la['Site']       # don't really need this, but for consistency with above
-                        row = self.setup_row_dict(site, la["@LocalAuthorityName"])
-                        output_data.append(self.update_site_species_info(site, row))
-                    # something's gone wrong...!
-                    else:
-                        row = None
-                        print(f"Unexpected site type: site info = {site}, {type(site)}")                        
-            
-            return output_data
+            return self.process_group_emissions(data, 'HourlyAirQualityIndex', 'LocalAuthority')
         else:
             return None
+
+    def get_emissions_across_london_last_n_days(self, group_name="London", n=7):
+        # I want to: 
+        # - get emissions for the last n days, i.e. today and the preceeding 6 days
+        # - average the emissions (for each emission), by local auth and also across London
+        #   -- can the be done more efficiently on the client-side?
+        # Notes:
+        # - the URL I need is /Daily/MonitoringIndex/GroupName={Group}/Date={Date}/Json
+        # - the output format is very similar to that for get_current_emissions_across_london :-)
+        output_data = {}
+        for i in range(1, n):
+            day = datetime_obj_to_str(dt.datetime.now() - dt.timedelta(days = i))
+            if day[0] == "0": day = day[1:]            
+            URL = f"/Daily/MonitoringIndex/GroupName={group_name}/Date={day}/Json"
+            data = self.get_data_from_API(URL)            
+            if data is not None:
+                output_data[day] = self.process_group_emissions(data, "DailyAirQualityIndex", "LocalAuthority")
+            else:
+                output_data[day] = None
+        
+        return output_data
 
     def get_hourly_site_readings_between(self, site_code, 
                                          start_date=DEFAULT_START_DATE, 
@@ -289,6 +313,15 @@ class AirQualityApiData:
             return None
 
     def get_all_emissions_info(self):
+        """
+        Get information about each of the emissions types; name, code, description, its effect on health, 
+        a link to more information on the emission.
+
+        Return a json-style list of dicts, where each list item is a particular emissions type, e.g.:
+        [{"SpeciesName": "Carbon Monoxide", "SpeciesCode": "CO", "Description": "..<text>..", "HealthEffect":"..<text>..", "Link": "www..."},
+         {"SpeciesName": "Ozone", "SpeciesCode": "O3", "Description": "..<text>..", "HealthEffect":"..<text>..", "Link": "www..."},
+         ...]
+        """
         URL = f"/Information/Species/Json"
         data = self.get_data_from_API(URL)
         if data is not None:
@@ -305,7 +338,7 @@ class AirQualityApiData:
 def main():
     setup = AirQualityApiData(use_DES_proxy = False)
 
-    ldn = setup.get_emissions_across_london()
+    ldn = setup.get_current_emissions_across_london()
     df = pd.DataFrame(ldn)
     print("\nEmissions across London\n-----------------------")
     print(df.head())
@@ -314,6 +347,12 @@ def main():
     df = pd.DataFrame(e)
     print("\nEmissions info\n--------------")
     print(df.head())
+
+    last_n = setup.get_emissions_across_london_last_n_days(n=3)
+    print("\nLast n days:\n===========")
+    for day in last_n:
+        print(f"\n{day}\n{'-'*len(day)}")
+        print(pd.DataFrame(last_n[day]).head())
     
 if __name__ == "__main__":
     main()
