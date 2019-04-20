@@ -1,11 +1,12 @@
+dist: xenial
 language: python
 python:
   - 3.6
-before_install:
-  # The default version of sqlite on travis doesn't work for django 2.1.2
-  - sudo apt-add-repository -y ppa:travis-ci/sqlite3
-  - sudo apt-get -y update
-  - sudo apt-get -y install sqlite3=3.8.3~travis1
+# before_install:
+#   # The default version of sqlite on travis doesn't work for django 2.1.2
+#   - sudo apt-add-repository -y ppa:travis-ci/sqlite3
+#   - sudo apt-get -y update
+#   - sudo apt-get -y install sqlite3=3.8.3~travis1
 install:
   - pip install -r requirements.txt
 script:
