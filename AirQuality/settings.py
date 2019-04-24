@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
-import django_heroku
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -132,4 +131,9 @@ STATICFILES_DIRS = [STATIC_DIR, ]
 MEDIA_ROOT = MEDIA_DIR
 MEDIA_URL = '/media/'
 
-django_heroku.settings(locals())
+# oddity where running in travis ci with django_heroku breaks the 
+# build, but running without throws a 500 error in heroku:
+# https://github.com/heroku/django-heroku/issues/39
+if '/app' in os.environ['HOME']:
+    import django_heroku
+    django_heroku.settings(locals())
