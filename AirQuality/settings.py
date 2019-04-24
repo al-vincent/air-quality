@@ -26,9 +26,9 @@ MEDIA_DIR = os.path.join(BASE_DIR, 'media')         # media files
 SECRET_KEY = 'h(q2(qykk55r+x-^mo)k37v*f1rk+2-n*-6_x#s+tz1_^$cuqs'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['air-quality.herokuapp.com']
 
 # Application definition
 
