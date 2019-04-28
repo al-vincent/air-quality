@@ -89,8 +89,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'air-quality',
-        'USER': 'postgres_user',
-        'PASSWORD': 'p0stgr35',
+        'USER': 'postgres',
+        'PASSWORD': 'fBoE^ioK1#Vxe?vaC7mi&jDG2',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
