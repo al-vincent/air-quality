@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+import django_heroku
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,9 +26,9 @@ MEDIA_DIR = os.path.join(BASE_DIR, 'media')         # media files
 SECRET_KEY = 'h(q2(qykk55r+x-^mo)k37v*f1rk+2-n*-6_x#s+tz1_^$cuqs'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['air-quality.herokuapp.com']
+ALLOWED_HOSTS = ['air-quality.herokuapp.com', 'localhost', '127.0.0.1', '[::1]']
 
 # Application definition
 
@@ -78,13 +79,22 @@ WSGI_APPLICATION = 'AirQuality.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'air-quality',
+        'USER': 'postgres_user',
+        'PASSWORD': 'p0stgr35',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -134,6 +144,8 @@ MEDIA_URL = '/media/'
 # oddity where running in travis ci with django_heroku breaks the 
 # build, but running without throws a 500 error in heroku:
 # https://github.com/heroku/django-heroku/issues/39
-if '/app' in os.environ['HOME']:
-    import django_heroku
-    django_heroku.settings(locals())
+try:
+    if '/app' in os.environ['HOME']:        
+        django_heroku.settings(locals())
+except KeyError:
+    print("Running locally")

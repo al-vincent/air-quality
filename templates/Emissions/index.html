@@ -17,6 +17,7 @@
     <script src="{% static 'lib/js/leaflet.js' %}"></script>
     <script src="{% static 'lib/js/heatmap.min.js' %}"></script>
     <script src="{% static 'lib/js/leaflet-heatmap.js' %}"></script>
+    <script src="{% static 'lib/js/Chart.bundle.min.js' %}"></script>
   
     <title>Air Quality</title>
   </head>
@@ -117,7 +118,8 @@
       <!-- emissions information group -->
       <div class="jumbotron">
         <h3 id="info-emissions">Info about the emission selected</h3>
-
+        
+        <!-- emission info card-deck -->
         <div class="card-deck">
           <div class="card">
             <div class="card-body">
@@ -133,8 +135,15 @@
             </div>
           </div>
         </div>
-                
+        <!-- /emission info card-deck -->
+
         <p id="link-emissions"></p>
+
+        <!-- emissions graphs -->
+        <div id=graph-emission-history>
+          <canvas id="canvas-emission-history-graph"></canvas>
+        </div>
+        <!-- /emissions graphs -->
       </div>
       <!-- emissions information group -->
 

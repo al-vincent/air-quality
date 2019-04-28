@@ -165,6 +165,83 @@ function main(){
         changeEmissionsInfoElements(getEmissionsInfo(newEmissionsType));
 
     });
+
+
+    // ----------------------------------------------------------------------------------------------
+    // Generate emissions history graph
+    // ----------------------------------------------------------------------------------------------
+    function getDates(numDays) {
+        let dates = [];
+        const today = new Date();        
+        dates.push(today.toLocaleDateString('en-GB'));
+        for(let i = 1; i < numDays; i++){
+            const newDate = new Date(today.getFullYear(), 
+                                     today.getMonth(), 
+                                     today.getDate() - i);
+            dates.push(newDate.toLocaleDateString('en-GB'));
+        }
+        return dates.reverse();
+    };
+
+	const horizontalBarChartData = {
+        labels: getDates(7), //['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+        datasets: [{
+            label: 'Nitrogen Dioxide',
+            backgroundColor: 'rgba(255, 0, 0, 0.3)',
+            borderColor: 'rgba(255, 0, 0, 0.6)',
+            borderWidth: 1,
+            data: [7, 7, 8, 7, 8, 9, 10]
+		}, {
+            label: 'Sulphur Dioxide',
+            backgroundColor: 'rgba(0, 0, 255, 0.3)',
+            borderColor: 'rgba(0, 0, 255, 0.6)',
+            data: [1, 3, 3, 2, 4, 5, 4]
+        }, {
+            label: 'Ozone',
+            backgroundColor: 'rgba(0, 255, 0, 0.3)',
+            borderColor: 'rgba(0, 255, 0, 0.6)',
+            data: [2, 2, 3, 3, 2, 2, 3]
+        }, {
+            label: 'Carbon Monopxide',
+            backgroundColor: 'rgba(33, 120, 120, 0.3)',
+            borderColor: 'rgba(33, 120, 120, 0.6)',
+            data: [3, 4, 3, 2, 3, 4, 5]
+        }]
+
+    };
+
+    window.onload = function() {
+        const ctx = document.getElementById('canvas-emission-history-graph').getContext('2d');
+        window.myHorizontalBar = new Chart(ctx, {
+            type: 'bar',
+            data: horizontalBarChartData,
+            options: {
+                // Elements options apply to all of the options unless overridden in a dataset
+                // In this case, we are setting the border of each horizontal bar to be 2px wide
+                elements: {
+                    rectangle: {
+                        borderWidth: 2,
+                    }
+                },
+                responsive: true,
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Bar chart placeholder',
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true, 
+                        }
+                    }]
+                }
+            }
+        });
+
+    };
 }
 
 // run the script
