@@ -224,13 +224,10 @@ function main(){
                     }
                 },
                 responsive: true,
+                maintainAspectRatio: true, 
                 legend: {
                     position: 'top',
-                },
-                title: {
-                    display: true,
-                    text: 'Bar chart placeholder',
-                },
+                },            
                 scales: {
                     yAxes: [{
                         ticks: {
