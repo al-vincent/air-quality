@@ -224,7 +224,7 @@ function main(){
                     }
                 },
                 responsive: true,
-                maintainAspectRatio: true, 
+                // maintainAspectRatio: false, 
                 legend: {
                     position: 'top',
                 },            
