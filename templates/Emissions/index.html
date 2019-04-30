@@ -64,13 +64,12 @@
     <div class="container">
 
       <!-- drop-down, map group -->
-      <div class=" jumbotron">
+      <div class="jumbotron jumbotron-narrow">
 
         <!-- drop-down menus row -->
         <div class="form-row">
           <!-- emissions drop-down -->
           <div class="col-lg-4 col-sm-12">
-            <label for="list-emissions">Emission type</label>
             <select id="list-emissions" class="form-control">
               {% for emission in emission_types %}
                 <option value="{{ emission.value }}">{{ emission.text }}</option>
@@ -81,7 +80,6 @@
 
           <!-- locations drop-down -->
           <div class="col-lg-4 col-sm-12">
-              <label for="list-london-areas">Area to view</label>
               <select id="list-london-areas" class="form-control">
                 {% for area in area_groups %}
                   <option value="{{ area.value }}">{{ area.text }}</option>
@@ -92,7 +90,6 @@
 
           <!-- illnesses drop-down -->
           <div class="col-lg-4 col-sm-12">
-              <label for="list-illnesses">Illness affected</label>
               <select id="list-illnesses" class="form-control">
                 {% for illness in illness_types %}
                   <option value="{{ illness.value }}">{{ illness.text }}</option>
@@ -116,7 +113,7 @@
       <!-- drop-down, map group -->
 
       <!-- emissions information group -->
-      <div class="jumbotron">
+      <div class="jumbotron jumbotron-narrow">
         <h3 id="info-emissions">Info about the emission selected</h3>
         
         <!-- emission info card-deck -->
@@ -137,27 +134,23 @@
         </div>
         <!-- /emission info card-deck -->
 
-        <p id="link-emissions"></p>
+        <p class="row" id="link-emissions"></p>
 
         <!-- emissions graphs -->
         <div class="row" id=graph-emission-history>
-          <!-- <div class="col-12">
-            <div class="card">
-              <div class="card-body"> -->
-                <h5>Placeholder plot</h5>
-                <canvas id="canvas-emission-history-graph" height="300"></canvas>
-              <!-- </div>
-            </div>
-          </div> -->
+          <div class="chart-container">
+            <h5>Placeholder plot</h5>
+            <canvas id="canvas-emission-history-graph"></canvas>
+          </div>
         </div>
         <!-- /emissions graphs -->
       </div>
       <!-- emissions information group -->
 
       <!-- illness information group -->
-      <div class="jumbotron">
+      <div class="jumbotron jumbotron-narrow" id="info-illness">
         <div class="row">
-          <h3 id="info-illness">Info about the illness selected</h3>
+          <h3>Info about the illness selected</h3>
         </div>
       </div>
       <!-- illness information row -->

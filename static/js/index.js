@@ -99,7 +99,7 @@ function main(){
     }   
 
 	// get tiles from openstreetmap.org, add attribution etc. Add tiles to map.
-	let baseLayer = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	let baseLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 			maxZoom: 18,
 			subdomains: ['a','b','c']
@@ -224,7 +224,7 @@ function main(){
                     }
                 },
                 responsive: true,
-                // maintainAspectRatio: false, 
+                maintainAspectRatio: false, 
                 legend: {
                     position: 'top',
                 },            
