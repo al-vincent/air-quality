@@ -15,17 +15,23 @@ class Species(models.Model):
         return f"{self.name} ({self.code}), {self.description}"
 
 
-class Group(models.Model):
+class LocalAuthority(models.Model):
     """
-    A Group is a geographic area (primarily in London) for which emissions 
-    data is available. Fields are copies of those provided by the LondonAir API.
+    A LocalAuthority is a London Local Authority, i.e. a geographic and 
+    administrative area in London. 
+
+    Each LA contains Sites that collect the actual emissions data. The model
+    contains lat/lon properties; these represent the *centre* of the LA, 
+    rather than the whole area.
     """
     name = models.TextField(default='')
-    description = models.TextField(default='')
-    link = models.URLField(default='', null = True, blank = True)
+    code = models.IntegerField()
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    link = models.URLField(default='', null=True, blank=True)
 
     def __str__(self):
-        return f"{self.name}, {self.description} ({self.link})"
+        return f"{self.name}, {self.code} ({self.link})"
     
     
 class Site(models.Model):
@@ -37,7 +43,7 @@ class Site(models.Model):
     name = models.TextField(default='')
     code = models.CharField(max_length=3, default='')
     site_type = models.TextField(default='')
-    local_auth = models.TextField(default='')
+    local_auth = models.ForeignKey(LocalAuthority, on_delete=models.CASCADE)
     link = models.URLField(default='')
     latitude = models.FloatField(default='')
     longitude = models.FloatField(default='')
