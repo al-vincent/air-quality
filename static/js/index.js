@@ -1,8 +1,10 @@
 "use strict";
 
 // lat, lng, intensity for different types of emissions
-const EMISSION_LEVELS = JSON.parse(document.getElementById('geo-data-id').textContent);
+const EMISSION_LEVELS = JSON.parse(document.getElementById('emissions-data-id').textContent);
 const EMISSION_INFO = JSON.parse(document.getElementById('emissions-info-id').textContent);
+const LOCAL_AUTHORITIES = JSON.parse(document.getElementById('local-auths-id').textContent);
+const SITES = JSON.parse(document.getElementById('sites-id').textContent);
 
 // default values for drop-down menus
 const DEFAULT_EMISSIONS = "Nitrogen Dioxide";
@@ -12,6 +14,12 @@ const DEFAULT_ILLNESS = "asthma";
 // get bounding box for London
 const MIN_LAT = 51.357, MAX_LAT = 51.669;
 const MIN_LNG = -0.461, MAX_LNG = 0.206;
+
+// test that we can access the GEOJSON object from the londonBoroughs.geojson file
+// GEOJSON["features"].forEach(function(d) {
+//     console.log(d["properties"]["name"]);    
+// })
+
 
 // ***************************************************************************************************
 // Helper functions 
@@ -34,12 +42,12 @@ function getEmissionsValues(emissionsType){
                           "value": EMISSION_LEVELS[i][emissionsType]});
         }
     }
-    return { max: 1, data: newData };
+    return { max: 10, data: newData };
 }
 
 function getEmissionsInfo(emissionsType){
     for(let i = 0; i < EMISSION_INFO.length; i++){
-        if(EMISSION_INFO[i]['SpeciesName'] === emissionsType){
+        if(EMISSION_INFO[i]['name'] === emissionsType){
             return EMISSION_INFO[i];
         }
     }
@@ -47,10 +55,21 @@ function getEmissionsInfo(emissionsType){
 }
 
 function changeEmissionsInfoElements(emissionInfo){
-    document.getElementById('info-emissions').innerHTML = emissionInfo['SpeciesName'];
-    document.getElementById('description-emissions').innerHTML = emissionInfo['Description'];
-    document.getElementById('health-effect-emissions').innerHTML = emissionInfo['HealthEffect'];
-    document.getElementById('link-emissions').innerHTML = emissionInfo['Link'];
+    document.getElementById('info-emissions').innerHTML = emissionInfo['name'];
+    document.getElementById('description-emissions').innerHTML = emissionInfo['description'];
+    document.getElementById('health-effect-emissions').innerHTML = emissionInfo['health_effect'];
+    document.getElementById('link-emissions').innerHTML = emissionInfo['link'];
+}
+
+function getSitesInLocalAuthority(la_name){
+    const la = LOCAL_AUTHORITIES.filter(function(d) { return d["name"] === la_name; });
+    return SITES.filter(function(d) { return d["local_auth_id"] === la[0]["code"]; });
+}
+
+function getGeojsonForLocalAuthority(la_name){
+    return GEOJSON['features'].filter(function(d){
+        return d['properties']['name'] === la_name;
+    });
 }
 
 // ***************************************************************************************************
@@ -58,7 +77,7 @@ function changeEmissionsInfoElements(emissionInfo){
 // ***************************************************************************************************
 function main(){
     // ----------------------------------------------------------------------------------------------
-    // Get user location, adjust map to show user loc or all of London
+    // Get user location, adjust map to show either the user's location or all of London
     // ----------------------------------------------------------------------------------------------
     let userLoc = {"latlng": null, "bounds": null};
     // console.log(userLoc); 
@@ -103,7 +122,7 @@ function main(){
 			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 			maxZoom: 18,
 			subdomains: ['a','b','c']
-			});
+        });
     
     // ----------------------------------------------------------------------------------------------
     // Generate heatmap
@@ -111,7 +130,7 @@ function main(){
     // cfg is a heatmap.js config variable
     let cfg = {        
         "radius": 30,             // set the radius of the heatmap points (bit trial-and-error...)
-        "maxOpacity": .7,         // sets how opaque (i.e. non-transparent) the heatmap points are
+        "maxOpacity": 1.0,        // sets how opaque (i.e. non-transparent) the heatmap points are
         "scaleRadius": false,     // scales point radius based on map zoom         
         "useLocalExtrema": false, // use *global* heatmap values at all times (i.e. max *always* 1)       
         latField: 'lat',          // fieldname used for latitude
@@ -121,8 +140,11 @@ function main(){
     // create the heatmap layer
     let heatmapLayer = new HeatmapOverlay(cfg);
 
+    // create the goejson polygon
+    let geoJsonLayer = L.geoJSON();
+
     // create the map using the 'map' ID tag, and add the two layers
-    let map = L.map("map", { layers: [baseLayer, heatmapLayer]});
+    let map = L.map("map", { layers: [baseLayer, heatmapLayer, geoJsonLayer]});
     
     // ----------------------------------------------------------------------------------------------
     // Get user location
@@ -150,11 +172,12 @@ function main(){
     changeEmissionsInfoElements(getEmissionsInfo(DEFAULT_EMISSIONS));
 
     // ----------------------------------------------------------------------------------------------
-    // Add an event listener, to update the map when the list-emissions drop-down changes
+    // Add an event listener, to update elements when the list-emissions drop-down changes
     // ----------------------------------------------------------------------------------------------
     const emissionsList = document.getElementById('list-emissions');
+    // listen for a change in the emissions drop-down
     emissionsList.addEventListener("change", function(){
-        // listen for a change in the emissions drop-down
+        // get the newly-selected element
         const newEmissionsType = document.getElementById('list-emissions').selectedOptions[0].text;
         
         // get the new emissions intensities
@@ -163,9 +186,33 @@ function main(){
 
         // update the text of the emissions elements 
         changeEmissionsInfoElements(getEmissionsInfo(newEmissionsType));
-
     });
 
+    // ----------------------------------------------------------------------------------------------
+    // Add an event listener, to update elements when the list-london-areas drop-down changes
+    // ----------------------------------------------------------------------------------------------
+    const localAuthsList = document.getElementById('list-london-areas');
+    // listen for a change in the local authorities drop-down
+    localAuthsList.addEventListener("change", function(){
+        // get the newly-selected element
+        const newLocalAuth = document.getElementById('list-london-areas').selectedOptions[0].text;
+
+        console.log("Sites:");
+        console.log(getSitesInLocalAuthority(newLocalAuth));
+        
+        debugger;
+        geoJsonLayer.remove();
+        geoJsonLayer.addData(getGeojsonForLocalAuthority(newLocalAuth));
+        // geoJsonLayer.addTo(map);
+    });
+
+    // ----------------------------------------------------------------------------------------------
+    // Add an event listener for the zoom-in button, to log current zoom level
+    // ----------------------------------------------------------------------------------------------
+    const zoomIn = document.getElementsByClassName("leaflet-control-zoom-in")[0];
+    zoomIn.addEventListener("click", function(){
+        console.log("Current zoom: " + map.getZoom());
+    });
 
     // ----------------------------------------------------------------------------------------------
     // Generate emissions history graph

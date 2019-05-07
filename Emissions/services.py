@@ -19,7 +19,6 @@ import pandas as pd
 BASE_URL = "http://api.erg.kcl.ac.uk/AirQuality"
 DES_PROXY = {'http' : 'http://10.160.27.36:3128'}
 DEFAULT_START_DATE = "01Jan2019"
-MAX_INDEX = 10
 
 def datetime_obj_to_str(dt_obj):
     """
@@ -94,26 +93,20 @@ class AirQualityApiData:
                 "Ozone": None, 
                 "PM10 Particulate": None, 
                 "PM2.5 Particulate": None}
-    
-    def convert_values(self, value):
-        if value == 0 or value == None:
-            return None
-        else:
-            return ((MAX_INDEX - value) + 1) / MAX_INDEX
 
     def get_species_type(self, species_info, row):
         if species_info["@SpeciesCode"] == "CO":
-            row["Carbon Monoxide"] = self.convert_values(float(species_info["@AirQualityIndex"]))
+            row["Carbon Monoxide"] = float(species_info["@AirQualityIndex"])
         elif species_info["@SpeciesCode"] == "NO2":
-            row["Nitrogen Dioxide"] = self.convert_values(float(species_info["@AirQualityIndex"]))
+            row["Nitrogen Dioxide"] = float(species_info["@AirQualityIndex"])
         elif species_info["@SpeciesCode"] == "SO2":
-            row["Sulphur Dioxide"] = self.convert_values(float(species_info["@AirQualityIndex"]))
+            row["Sulphur Dioxide"] = float(species_info["@AirQualityIndex"])
         elif species_info["@SpeciesCode"] == "O3":
-            row["Ozone"] = self.convert_values(float(species_info["@AirQualityIndex"]))
+            row["Ozone"] = float(species_info["@AirQualityIndex"])
         elif species_info["@SpeciesCode"] == "PM10":
-            row["PM10 Particulate"] = self.convert_values(float(species_info["@AirQualityIndex"]))
+            row["PM10 Particulate"] = float(species_info["@AirQualityIndex"])
         elif species_info["@SpeciesCode"] == "PM25":
-            row["PM2.5 Particulate"] = self.convert_values(float(species_info["@AirQualityIndex"]))
+            row["PM2.5 Particulate"] = float(species_info["@AirQualityIndex"])
         else:
             print(f"\n*** Unexpected species {species_info['@SpeciesCode']} ***\n")
         return row
