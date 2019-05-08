@@ -72,6 +72,25 @@ function getGeojsonForLocalAuthority(la_name){
     });
 }
 
+function getMapLocalAuthBounds(coords){    
+    const lats = [], lngs = [];    
+    coords.forEach(function(d){
+        if(isNaN(d[0])){ 
+            console.log("Lng NaN: " + d[0]);
+        } else {
+            lngs.push(d[0]);
+        }
+
+        if(isNaN(d[1])){ 
+            console.log("Lng NaN: " + d[1]);
+        } else {
+            lats.push(d[1]);
+        }
+    });
+    return [[Math.min(...lats), Math.min(...lngs)], 
+            [Math.max(...lats), Math.max(...lngs)]];
+}
+
 // ***************************************************************************************************
 // Main 
 // ***************************************************************************************************
@@ -197,14 +216,35 @@ function main(){
         // get the newly-selected element
         const newLocalAuth = document.getElementById('list-london-areas').selectedOptions[0].text;
 
-        console.log("Sites:");
-        console.log(getSitesInLocalAuthority(newLocalAuth));
+        // get the boundary coords of the local authority and move the map to centre on it
+        const newGeoJson = getGeojsonForLocalAuthority(newLocalAuth);
+        map.fitBounds(getMapLocalAuthBounds(newGeoJson[0]["geometry"]["coordinates"][0][0]));
         
-        debugger;
-        geoJsonLayer.remove();
-        geoJsonLayer.addData(getGeojsonForLocalAuthority(newLocalAuth));
-        // geoJsonLayer.addTo(map);
+        // get rid of the existing local authority polygon layer, and draw a new LA polygon
+        map.removeLayer(geoJsonLayer);
+        geoJsonLayer = L.geoJSON(newGeoJson).addTo(map);
+
+        // console.log("Sites:");
+        // console.log(getSitesInLocalAuthority(newLocalAuth));
+        // TODO: use the above to get the emissions collection sites in the local auth
+        const sites = getSitesInLocalAuthority(newLocalAuth);
+        sites.forEach(function(d) {
+            L.circle([d["latitude"], d["longitude"]], {
+                color: 'red',
+                fillColor: '#f03',
+                fillOpacity: 0.5,
+                alt: d["name"],
+                radius: 300
+            }).addTo(map);
+        });
     });
+
+    // map.on('zoomend', function() {
+    //     var currentZoom = map.getZoom();
+    //     var myRadius = currentZoom*(1/2); //or whatever ratio you prefer
+    //     var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
+    //         layername.setStyle({radius: myRadius, weight: myWeight});
+    // });
 
     // ----------------------------------------------------------------------------------------------
     // Add an event listener for the zoom-in button, to log current zoom level

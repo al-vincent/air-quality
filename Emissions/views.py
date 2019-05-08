@@ -11,7 +11,6 @@ def index(request):
     data = AirQualityApiData()    
     # get a list of London local authorities from db
     local_auths = list(LocalAuthority.objects.all().values())
-    print(local_auths)
     # get a list of sites from the db
     sites = list(Site.objects.all().values())
     # get a list of species from db
