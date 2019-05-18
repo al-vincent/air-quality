@@ -1,16 +1,16 @@
 # TODOs:
-# - Update any methods where the return-type is a Pandas dataframe, to either a 
-#   dict or JSON
-#   -- Consider; do we need Pandas at all here? Can we only import it to specific fncs?
+# - Update any methods where the return-type is a Pandas dataframe, to a dict 
 # - Make sure every function returns *something*
 # - Get rid of all '@'s in returns; just weird and confusing
 # - More generally; for our app, would be more DRY to have a config file containing 
 #   mappings of API headers to variable names, that we can use across the app?
 #   -- Could it go into settings.py? Need to check we're not accidentally overriding 
 #       reserved names!
+#   -- Should also do this for API URLs, BASE_URL (and DES_PROXY...?)
 # - Will need a method that takes a site (or list of sites), an emission type and a 
 #   date-range and returns the relevant intensity
-# - Setup logging (e.g. when the API isn't available)
+# - Setup logging   
+# - Failover to a database table of previous emissions values (in case API is down)
 
 import datetime as dt
 import requests
@@ -80,19 +80,23 @@ class AirQualityApiData:
             return None
     
     def setup_row_dict(self, site_data, la_name):
-        return {"Local Authority name": la_name, 
-                "Site name": site_data["@SiteName"],
-                "Site code": site_data["@SiteCode"], 
-                "Site type": site_data["@SiteType"], 
-                "Date": site_data["@BulletinDate"], 
-                "Latitude": float(site_data["@Latitude"]), 
-                "Longitude": float(site_data["@Longitude"]), 
-                "Carbon Monoxide": None, 
-                "Nitrogen Dioxide": None, 
-                "Sulphur Dioxide": None, 
-                "Ozone": None, 
-                "PM10 Particulate": None, 
-                "PM2.5 Particulate": None}
+        try:
+            return {"Local Authority name": la_name, 
+                    "Site name": site_data["@SiteName"],
+                    "Site code": site_data["@SiteCode"], 
+                    "Site type": site_data["@SiteType"], 
+                    "Date": site_data["@BulletinDate"], 
+                    "Latitude": float(site_data["@Latitude"]), 
+                    "Longitude": float(site_data["@Longitude"]), 
+                    "Carbon Monoxide": None, 
+                    "Nitrogen Dioxide": None, 
+                    "Sulphur Dioxide": None, 
+                    "Ozone": None, 
+                    "PM10 Particulate": None, 
+                    "PM2.5 Particulate": None}
+        except KeyError as err:
+            print(f"The key {err.args[0]} does not exist")
+            return None
 
     def get_species_type(self, species_info, row):
         if species_info["@SpeciesCode"] == "CO":
@@ -329,7 +333,7 @@ class AirQualityApiData:
                 {"value": "emphesema", "text":"Emphesema"}]
 
 def main():
-    setup = AirQualityApiData(use_DES_proxy = False)
+    setup = AirQualityApiData(use_DES_proxy=False)
 
     ldn = setup.get_current_emissions_across_london()
     df = pd.DataFrame(ldn)

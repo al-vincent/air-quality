@@ -9,9 +9,9 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 
     {% load static %}
-    <!-- custom styles and leaflet css -->
-    <link href="{% static 'css/styles.css' %}" rel="stylesheet" type="text/css">
+    <!-- custom styles and leaflet css -->    
     <link href="{% static 'lib/css/leaflet.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" type="text/css">
     
 		<!-- leaflet and heatmap libs -->
     <script src="{% static 'lib/js/leaflet.js' %}"></script>
@@ -117,7 +117,7 @@
 
       <!-- emissions information group -->
       <div class="jumbotron jumbotron-narrow">
-        <h3 id="info-emissions">Info about the emission selected</h3>
+        <h3 id="title-emissions">Info about the emission selected</h3>
         
         <!-- emission info card-deck -->
         <div class="card-deck">
@@ -153,7 +153,9 @@
       <!-- local authority information group -->
       <div class="jumbotron jumbotron-narrow" id="info-local-authority">
         <div class="row">
-          <h3>Info about the local authority selected</h3>
+          <h3 id="title-local-authority">Info about the local authority selected</h3>
+          <p id="description-local-authority">Description</p>
+          <p id="list-sites"></p>
         </div>
       </div>
       <!-- local authority information group -->
@@ -161,7 +163,7 @@
       <!-- illness information group -->
       <div class="jumbotron jumbotron-narrow" id="info-illness">
         <div class="row">
-          <h3>Info about the illness selected</h3>
+          <h3>Info about the illness selected</h3>          
         </div>
       </div>
       <!-- illness information group -->

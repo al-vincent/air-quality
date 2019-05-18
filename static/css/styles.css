@@ -10,6 +10,13 @@
 
 .chart-container{
     position: relative; 
-    height:50vh; 
-    width:100%;
+    height: 50vh; 
+    width: 100%;
+}
+
+.circle-text{
+    background-color: transparent;
+    border: none;
+    border-radius: 0px;
+    box-shadow: none;
 }
