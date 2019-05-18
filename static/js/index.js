@@ -1,8 +1,32 @@
+/** 
+ * TODOs:
+ * =====
+ * 
+ * LocalAuth onchange
+ * ------------------
+ * - add a mini-graph for LA-level (/ Group) emissions
+ * - add info about each of the sites; what they collect, whether they're active etc.
+ * - display mini-graphs for each site, on the emissions they've collected?
+ * 
+ * Display
+ * -------
+ * - Use heatmap for zoom > 10? [Check value]
+ *      -- Alternative: average site values across a LocalAuth, and display as circles?
+ * - For LocalAuths; display site values as numbers in circles (a few options for adding nums)
+ *      -- Need to hide circles in other local auths, or set opacity = 0.1 or something
+ *      -- Also need to use different colours for 'dead' sites
+ *      -- When the map is resized (zoomed), change the size of the circlemarker <== may be ok?
+ * */ 
+
 "use strict";
 
 // lat, lng, intensity for different types of emissions
-const EMISSION_LEVELS = JSON.parse(document.getElementById('geo-data-id').textContent);
+const EMISSION_LEVELS = JSON.parse(document.getElementById('emissions-data-id').textContent);
+console.log("EMISSION_LEVELS:");
+console.log(EMISSION_LEVELS);
 const EMISSION_INFO = JSON.parse(document.getElementById('emissions-info-id').textContent);
+const LOCAL_AUTHORITIES = JSON.parse(document.getElementById('local-auths-id').textContent);
+const SITES = JSON.parse(document.getElementById('sites-id').textContent);
 
 // default values for drop-down menus
 const DEFAULT_EMISSIONS = "Nitrogen Dioxide";
@@ -12,6 +36,16 @@ const DEFAULT_ILLNESS = "asthma";
 // get bounding box for London
 const MIN_LAT = 51.357, MAX_LAT = 51.669;
 const MIN_LNG = -0.461, MAX_LNG = 0.206;
+
+const COLOURS = ["#bababa", "#006837", "#1a9850", "#66bd63", 
+                 "#a6d96a", "#d9ef8b", "#fee08b", "#fdae61", 
+                 "#f46d43", "#d73027", "#a50026"]; 
+
+// test that we can access the GEOJSON object from the londonBoroughs.geojson file
+// GEOJSON["features"].forEach(function(d) {
+//     console.log(d["properties"]["name"]);    
+// })
+
 
 // ***************************************************************************************************
 // Helper functions 
@@ -34,12 +68,12 @@ function getEmissionsValues(emissionsType){
                           "value": EMISSION_LEVELS[i][emissionsType]});
         }
     }
-    return { max: 1, data: newData };
+    return { max: 10, data: newData };
 }
 
 function getEmissionsInfo(emissionsType){
     for(let i = 0; i < EMISSION_INFO.length; i++){
-        if(EMISSION_INFO[i]['SpeciesName'] === emissionsType){
+        if(EMISSION_INFO[i]['name'] === emissionsType){
             return EMISSION_INFO[i];
         }
     }
@@ -47,10 +81,51 @@ function getEmissionsInfo(emissionsType){
 }
 
 function changeEmissionsInfoElements(emissionInfo){
-    document.getElementById('info-emissions').innerHTML = emissionInfo['SpeciesName'];
-    document.getElementById('description-emissions').innerHTML = emissionInfo['Description'];
-    document.getElementById('health-effect-emissions').innerHTML = emissionInfo['HealthEffect'];
-    document.getElementById('link-emissions').innerHTML = emissionInfo['Link'];
+    document.getElementById('title-emissions').innerHTML = emissionInfo['name'];
+    document.getElementById('description-emissions').innerHTML = emissionInfo['description'];
+    document.getElementById('health-effect-emissions').innerHTML = emissionInfo['health_effect'];
+    document.getElementById('link-emissions').innerHTML = emissionInfo['link'];
+}
+
+function changeLocalAuthorityInfoElements(localAuthName, siteInfo){    
+    const description = "There are " + siteInfo.length + " sites in the local authority. These are:"
+    // debugger;
+    const sitesList = siteInfo.map(function(d) { return d["name"]; });
+    document.getElementById('title-local-authority').innerHTML = localAuthName;
+    document.getElementById('description-local-authority').innerHTML = description;
+    document.getElementById('list-sites').innerHTML = sitesList;
+    // document.getElementById('link-emissions').innerHTML = emissionInfo['link'];
+    
+}
+
+function getSitesInLocalAuthority(la_name){
+    const la = LOCAL_AUTHORITIES.filter(function(d) { return d["name"] === la_name; });
+    return SITES.filter(function(d) { return d["local_auth_id"] === la[0]["code"]; });
+}
+
+function getGeojsonForLocalAuthority(la_name){
+    return GEOJSON['features'].filter(function(d){
+        return d['properties']['name'] === la_name;
+    });
+}
+
+function getMapLocalAuthBounds(coords){    
+    const lats = [], lngs = [];    
+    coords.forEach(function(d){
+        if(isNaN(d[0])){ 
+            console.log("Lng NaN: " + d[0]);
+        } else {
+            lngs.push(d[0]);
+        }
+
+        if(isNaN(d[1])){ 
+            console.log("Lng NaN: " + d[1]);
+        } else {
+            lats.push(d[1]);
+        }
+    });
+    return [[Math.min(...lats), Math.min(...lngs)], 
+            [Math.max(...lats), Math.max(...lngs)]];
 }
 
 // ***************************************************************************************************
@@ -58,7 +133,7 @@ function changeEmissionsInfoElements(emissionInfo){
 // ***************************************************************************************************
 function main(){
     // ----------------------------------------------------------------------------------------------
-    // Get user location, adjust map to show user loc or all of London
+    // Get user location, adjust map to show either the user's location or all of London
     // ----------------------------------------------------------------------------------------------
     let userLoc = {"latlng": null, "bounds": null};
     // console.log(userLoc); 
@@ -103,7 +178,7 @@ function main(){
 			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 			maxZoom: 18,
 			subdomains: ['a','b','c']
-			});
+        });
     
     // ----------------------------------------------------------------------------------------------
     // Generate heatmap
@@ -111,7 +186,7 @@ function main(){
     // cfg is a heatmap.js config variable
     let cfg = {        
         "radius": 30,             // set the radius of the heatmap points (bit trial-and-error...)
-        "maxOpacity": .7,         // sets how opaque (i.e. non-transparent) the heatmap points are
+        "maxOpacity": 1.0,        // sets how opaque (i.e. non-transparent) the heatmap points are
         "scaleRadius": false,     // scales point radius based on map zoom         
         "useLocalExtrema": false, // use *global* heatmap values at all times (i.e. max *always* 1)       
         latField: 'lat',          // fieldname used for latitude
@@ -119,11 +194,94 @@ function main(){
         valueField: 'value'       // fieldname used for heat value
     };
     // create the heatmap layer
-    let heatmapLayer = new HeatmapOverlay(cfg);
+    let heatmapLayer = new HeatmapOverlay(cfg);    
+
+    // create the goejson polygon
+    let geoJsonLayer = L.geoJSON();
+
+    // create a circle for each marker
+    // BETTER WAY: 
+    // - add all the circles to a FeatureGroup
+    // - can then bind the tooltip to every marker in the group
+    // - can also control the z-order for the group, moving all circles to the front / back
+    let siteList = [];
+    let emissionList = [];
+    for(let i = 0; i < SITES.length; i++){
+        const mySite = EMISSION_LEVELS.find(function(elem) {
+            return elem["Site name"] === SITES[i]["name"];
+        });
+
+        let siteEmission = 0;
+        if(mySite !== undefined){            
+            if(mySite[DEFAULT_EMISSIONS] !== null){
+                siteEmission = mySite[DEFAULT_EMISSIONS];
+            }
+        }
+        emissionList.push(siteEmission);
+
+        let j = L.circleMarker([SITES[i]["latitude"], SITES[i]["longitude"]], {
+            color: 'gray',
+            fillColor: COLOURS[siteEmission],
+            fillOpacity: 0.7,
+            radius: 10        
+        });     
+        siteList.push(j);
+    }
+    const sitesLayer = L.featureGroup(siteList);
+    // sitesLayer.bindTooltip(emissionList);
+    // console.log(sitesLayer.getLayers());
+    
+    const emissionsLayers = {
+        "Heatmap": heatmapLayer,
+        "Site-points": sitesLayer
+    };
 
     // create the map using the 'map' ID tag, and add the two layers
-    let map = L.map("map", { layers: [baseLayer, heatmapLayer]});
+    let map = L.map("map", { 
+        layers: [baseLayer, heatmapLayer, geoJsonLayer]//, sitesLayer]
+    });
+
+    // sitesLayer.bindTooltip("Y", {permanent: true,
+    //                              direction: 'center', 
+    //                              className: 'circle-text'
+    //                             }).addTo(map);
+
     
+    // SITES.forEach(function(d) {
+    //     const mySite = EMISSION_LEVELS.find(function(elem) {
+    //         return elem["Site name"] === d["name"];
+    //     });
+    //     let siteEmission = 0;
+    //     if(mySite !== undefined){            
+    //         if(mySite[DEFAULT_EMISSIONS] !== null){
+    //             siteEmission = mySite[DEFAULT_EMISSIONS];
+    //         }
+    //     }
+
+    //     const circle = L.circleMarker([d["latitude"], d["longitude"]], {
+    //         color: 'gray',
+    //         fillColor: COLOURS[siteEmission],
+    //         fillOpacity: 0.7,
+    //         radius: 10
+    //     }).addTo(map);
+        
+    //     let tooltip = L.tooltip({
+    //         permanent: true,
+    //         direction: 'center',
+    //         className: 'circle-text'
+    //     }).setLatLng([d["latitude"], d["longitude"]])
+    //       .setContent(siteEmission.toString())
+    //       .addTo(map);
+
+        // circle.bindTooltip(siteEmission.toString()).openTooltip();
+    // });
+
+    // ----------------------------------------------------------------------------------------------
+    // Add some user controls
+    // ----------------------------------------------------------------------------------------------
+    L.control.scale().addTo(map);                   // scale in bottom-left corner
+    L.control.layers(emissionsLayers).addTo(map);   // layer selector
+
     // ----------------------------------------------------------------------------------------------
     // Get user location
     // ----------------------------------------------------------------------------------------------
@@ -150,11 +308,12 @@ function main(){
     changeEmissionsInfoElements(getEmissionsInfo(DEFAULT_EMISSIONS));
 
     // ----------------------------------------------------------------------------------------------
-    // Add an event listener, to update the map when the list-emissions drop-down changes
+    // Add an event listener, to update elements when the list-emissions drop-down changes
     // ----------------------------------------------------------------------------------------------
     const emissionsList = document.getElementById('list-emissions');
+    // listen for a change in the emissions drop-down
     emissionsList.addEventListener("change", function(){
-        // listen for a change in the emissions drop-down
+        // get the newly-selected element
         const newEmissionsType = document.getElementById('list-emissions').selectedOptions[0].text;
         
         // get the new emissions intensities
@@ -163,9 +322,56 @@ function main(){
 
         // update the text of the emissions elements 
         changeEmissionsInfoElements(getEmissionsInfo(newEmissionsType));
-
     });
 
+    // ----------------------------------------------------------------------------------------------
+    // Add an event listener, to update elements when the list-london-areas drop-down changes
+    // ----------------------------------------------------------------------------------------------
+    const localAuthsList = document.getElementById('list-london-areas');
+    // listen for a change in the local authorities drop-down
+    localAuthsList.addEventListener("change", function(){
+        // get the newly-selected element
+        const newLocalAuth = document.getElementById('list-london-areas').selectedOptions[0].text;
+
+        // get the boundary coords of the local authority and move the map to centre on it
+        const newGeoJson = getGeojsonForLocalAuthority(newLocalAuth);
+        map.fitBounds(getMapLocalAuthBounds(newGeoJson[0]["geometry"]["coordinates"][0][0]));
+        
+        // get rid of the existing local authority polygon layer, and draw a new LA polygon
+        map.removeLayer(geoJsonLayer);
+        geoJsonLayer = L.geoJSON(newGeoJson).addTo(map);
+
+        console.log("Sites:");
+        console.log(getSitesInLocalAuthority(newLocalAuth));
+        // TODO: use the above to get the emissions collection sites in the local auth
+        const sites = getSitesInLocalAuthority(newLocalAuth);
+        // sites.forEach(function(d) {
+        //     L.circle([d["latitude"], d["longitude"]], {
+        //         color: 'red',
+        //         fillColor: '#f03',
+        //         fillOpacity: 0.5,
+        //         alt: d["name"],
+        //         radius: 300
+        //     }).addTo(map);
+        // });
+
+        changeLocalAuthorityInfoElements(newLocalAuth, sites);
+    });
+
+    // map.on('zoomend', function() {
+    //     var currentZoom = map.getZoom();
+    //     var myRadius = currentZoom*(1/2); //or whatever ratio you prefer
+    //     var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
+    //         layername.setStyle({radius: myRadius, weight: myWeight});
+    // });
+
+    // ----------------------------------------------------------------------------------------------
+    // Add an event listener for the zoom-in button, to log current zoom level
+    // ----------------------------------------------------------------------------------------------
+    const zoomIn = document.getElementsByClassName("leaflet-control-zoom-in")[0];
+    zoomIn.addEventListener("click", function(){
+        console.log("Current zoom: " + map.getZoom());
+    });
 
     // ----------------------------------------------------------------------------------------------
     // Generate emissions history graph
@@ -202,7 +408,7 @@ function main(){
             borderColor: 'rgba(0, 255, 0, 0.6)',
             data: [2, 2, 3, 3, 2, 2, 3]
         }, {
-            label: 'Carbon Monopxide',
+            label: 'Carbon Monoxide',
             backgroundColor: 'rgba(33, 120, 120, 0.3)',
             borderColor: 'rgba(33, 120, 120, 0.6)',
             data: [3, 4, 3, 2, 3, 4, 5]

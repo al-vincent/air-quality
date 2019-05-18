@@ -9,9 +9,9 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 
     {% load static %}
-    <!-- custom styles and leaflet css -->
-    <link href="{% static 'css/styles.css' %}" rel="stylesheet" type="text/css">
+    <!-- custom styles and leaflet css -->    
     <link href="{% static 'lib/css/leaflet.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" type="text/css">
     
 		<!-- leaflet and heatmap libs -->
     <script src="{% static 'lib/js/leaflet.js' %}"></script>
@@ -43,10 +43,13 @@
             <a class="nav-link" href="#info-emissions">Emissions</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" href="#info-local-authority">Local Authorities</a>
+          </li>          
+          <li class="nav-item">
             <a class="nav-link" href="#info-illness">Illnesses</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#about">About</a>
+            <a class="nav-link" href="#info-about">About</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#">Login</a>
@@ -71,8 +74,8 @@
           <!-- emissions drop-down -->
           <div class="col-lg-4 col-sm-12">
             <select id="list-emissions" class="form-control">
-              {% for emission in emission_types %}
-                <option value="{{ emission.value }}">{{ emission.text }}</option>
+              {% for emission in emissions_info %}
+                <option value="{{ emission.code }}">{{ emission.name }}</option>
               {% endfor %}
             </select>
           </div>
@@ -81,8 +84,8 @@
           <!-- locations drop-down -->
           <div class="col-lg-4 col-sm-12">
               <select id="list-london-areas" class="form-control">
-                {% for area in area_groups %}
-                  <option value="{{ area.value }}">{{ area.text }}</option>
+                {% for local_auth in local_auths %}
+                  <option value="{{ local_auth.code }}">{{ local_auth.name }}</option>
                 {% endfor %}
               </select>
           </div>
@@ -114,7 +117,7 @@
 
       <!-- emissions information group -->
       <div class="jumbotron jumbotron-narrow">
-        <h3 id="info-emissions">Info about the emission selected</h3>
+        <h3 id="title-emissions">Info about the emission selected</h3>
         
         <!-- emission info card-deck -->
         <div class="card-deck">
@@ -147,19 +150,41 @@
       </div>
       <!-- emissions information group -->
 
+      <!-- local authority information group -->
+      <div class="jumbotron jumbotron-narrow" id="info-local-authority">
+        <div class="row">
+          <h3 id="title-local-authority">Info about the local authority selected</h3>
+          <p id="description-local-authority">Description</p>
+          <p id="list-sites"></p>
+        </div>
+      </div>
+      <!-- local authority information group -->
+
       <!-- illness information group -->
       <div class="jumbotron jumbotron-narrow" id="info-illness">
         <div class="row">
-          <h3>Info about the illness selected</h3>
+          <h3>Info about the illness selected</h3>          
         </div>
       </div>
-      <!-- illness information row -->
+      <!-- illness information group -->
+
+      <!-- 'about' group -->
+      <div class="jumbotron jumbotron-narrow" id="info-about">
+          <div class="row">
+            <h3>About this app</h3>            
+          </div>
+        </div>
+        <!-- 'about' group -->
 
       <!-- LEAVE THIS 'TIL LAST!! -->
       <!-- pass data to javascript as JSON -->
-      {{ geo_data|json_script:"geo-data-id" }}
+      {{ emissions_data|json_script:"emissions-data-id" }}
       {{ emissions_info|json_script:"emissions-info-id" }}
+      {{ local_auths|json_script:"local-auths-id" }}
+      {{ sites|json_script:"sites-id" }}
+
       <!-- Load the javascript to render the map -->
+      <script src="{% static 'js/londonBoroughs.geojson' %}"></script>
       <script src="{% static 'js/index.js' %}"></script>
 
     </div>

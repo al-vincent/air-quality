@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from Emissions.services import AirQualityApiData
-from Emissions.models import Group, Species
+from Emissions.models import LocalAuthority, Species, Site
 
 def index(request):
     """
@@ -9,12 +9,14 @@ def index(request):
     """
     # get placeholder data
     data = AirQualityApiData()    
-    # get a list of groups from db, removing the first 12 (non-London)
-    grps = [{"value":grp.name, "text":grp.description} for grp in Group.objects.all().filter(id__gt=11)]
+    # get a list of London local authorities from db
+    local_auths = list(LocalAuthority.objects.all().values())
+    # get a list of sites from the db
+    sites = list(Site.objects.all().values())
     # get a list of species from db
-    species = [{"value":sp.code, "text":sp.name} for sp in Species.objects.all()]
-    return render(request, "Emissions/index.html", {"emission_types": species,
-                                                    "emissions_info": data.get_all_emissions_info(),
-                                                    "area_groups": grps,
+    species = list(Species.objects.all().values())
+    return render(request, "Emissions/index.html", {"emissions_info": species,
+                                                    "local_auths": local_auths,
+                                                    "sites": sites,
                                                     "illness_types": data.illness_types(), 
-                                                    "geo_data": data.get_current_emissions_across_london()})
+                                                    "emissions_data": data.get_current_emissions_across_london()})

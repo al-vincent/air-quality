@@ -1,16 +1,16 @@
 # TODOs:
-# - Update any methods where the return-type is a Pandas dataframe, to either a 
-#   dict or JSON
-#   -- Consider; do we need Pandas at all here? Can we only import it to specific fncs?
+# - Update any methods where the return-type is a Pandas dataframe, to a dict 
 # - Make sure every function returns *something*
 # - Get rid of all '@'s in returns; just weird and confusing
 # - More generally; for our app, would be more DRY to have a config file containing 
 #   mappings of API headers to variable names, that we can use across the app?
 #   -- Could it go into settings.py? Need to check we're not accidentally overriding 
 #       reserved names!
+#   -- Should also do this for API URLs, BASE_URL (and DES_PROXY...?)
 # - Will need a method that takes a site (or list of sites), an emission type and a 
 #   date-range and returns the relevant intensity
-# - Setup logging (e.g. when the API isn't available)
+# - Setup logging   
+# - Failover to a database table of previous emissions values (in case API is down)
 
 import datetime as dt
 import requests
@@ -19,7 +19,6 @@ import pandas as pd
 BASE_URL = "http://api.erg.kcl.ac.uk/AirQuality"
 DES_PROXY = {'http' : 'http://10.160.27.36:3128'}
 DEFAULT_START_DATE = "01Jan2019"
-MAX_INDEX = 10
 
 def datetime_obj_to_str(dt_obj):
     """
@@ -81,39 +80,37 @@ class AirQualityApiData:
             return None
     
     def setup_row_dict(self, site_data, la_name):
-        return {"Local Authority name": la_name, 
-                "Site name": site_data["@SiteName"],
-                "Site code": site_data["@SiteCode"], 
-                "Site type": site_data["@SiteType"], 
-                "Date": site_data["@BulletinDate"], 
-                "Latitude": float(site_data["@Latitude"]), 
-                "Longitude": float(site_data["@Longitude"]), 
-                "Carbon Monoxide": None, 
-                "Nitrogen Dioxide": None, 
-                "Sulphur Dioxide": None, 
-                "Ozone": None, 
-                "PM10 Particulate": None, 
-                "PM2.5 Particulate": None}
-    
-    def convert_values(self, value):
-        if value == 0 or value == None:
+        try:
+            return {"Local Authority name": la_name, 
+                    "Site name": site_data["@SiteName"],
+                    "Site code": site_data["@SiteCode"], 
+                    "Site type": site_data["@SiteType"], 
+                    "Date": site_data["@BulletinDate"], 
+                    "Latitude": float(site_data["@Latitude"]), 
+                    "Longitude": float(site_data["@Longitude"]), 
+                    "Carbon Monoxide": None, 
+                    "Nitrogen Dioxide": None, 
+                    "Sulphur Dioxide": None, 
+                    "Ozone": None, 
+                    "PM10 Particulate": None, 
+                    "PM2.5 Particulate": None}
+        except KeyError as err:
+            print(f"The key {err.args[0]} does not exist")
             return None
-        else:
-            return ((MAX_INDEX - value) + 1) / MAX_INDEX
 
     def get_species_type(self, species_info, row):
         if species_info["@SpeciesCode"] == "CO":
-            row["Carbon Monoxide"] = self.convert_values(float(species_info["@AirQualityIndex"]))
+            row["Carbon Monoxide"] = float(species_info["@AirQualityIndex"])
         elif species_info["@SpeciesCode"] == "NO2":
-            row["Nitrogen Dioxide"] = self.convert_values(float(species_info["@AirQualityIndex"]))
+            row["Nitrogen Dioxide"] = float(species_info["@AirQualityIndex"])
         elif species_info["@SpeciesCode"] == "SO2":
-            row["Sulphur Dioxide"] = self.convert_values(float(species_info["@AirQualityIndex"]))
+            row["Sulphur Dioxide"] = float(species_info["@AirQualityIndex"])
         elif species_info["@SpeciesCode"] == "O3":
-            row["Ozone"] = self.convert_values(float(species_info["@AirQualityIndex"]))
+            row["Ozone"] = float(species_info["@AirQualityIndex"])
         elif species_info["@SpeciesCode"] == "PM10":
-            row["PM10 Particulate"] = self.convert_values(float(species_info["@AirQualityIndex"]))
+            row["PM10 Particulate"] = float(species_info["@AirQualityIndex"])
         elif species_info["@SpeciesCode"] == "PM25":
-            row["PM2.5 Particulate"] = self.convert_values(float(species_info["@AirQualityIndex"]))
+            row["PM2.5 Particulate"] = float(species_info["@AirQualityIndex"])
         else:
             print(f"\n*** Unexpected species {species_info['@SpeciesCode']} ***\n")
         return row
@@ -336,7 +333,7 @@ class AirQualityApiData:
                 {"value": "emphesema", "text":"Emphesema"}]
 
 def main():
-    setup = AirQualityApiData(use_DES_proxy = False)
+    setup = AirQualityApiData(use_DES_proxy=False)
 
     ldn = setup.get_current_emissions_across_london()
     df = pd.DataFrame(ldn)
