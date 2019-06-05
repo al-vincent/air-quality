@@ -40,6 +40,8 @@ const COLOURS = ["#bababa", "#006837", "#1a9850", "#66bd63",
                  "#a6d96a", "#d9ef8b", "#fee08b", "#fdae61", 
                  "#f46d43", "#d73027", "#a50026"]; 
 
+const TABLE_HEADERS = ["Sites", "CO", "NO<sub>2</sub>", "O<sub>3</sub>", "PM10", "PM2.5", "SO<sub>2</sub>"];
+
 // test that we can access the GEOJSON object from the londonBoroughs.geojson file
 // GEOJSON["features"].forEach(function(d) {
 //     console.log(d["properties"]["name"]);    
@@ -86,20 +88,23 @@ function changeEmissionsInfoElements(emissionInfo){
     document.getElementById('link-emissions').innerHTML = emissionInfo['link'];
 }
 
-function addElement(parentDiv, classNames, content){
-    // create a new div; set its class(es)
-    let newElement = document.createElement("div");
-    newElement.setAttribute("class", classNames);
-    // append the new element to the parent
-    parentDiv.appendChild(newElement);
-    if(content !== null){
-        // add text to the element
-        const textNode = document.createTextNode(content);
-        newElement.appendChild(textNode);
-    }
-    return newElement;
+function createTableHead(tableId){
+    const table = document.getElementById(tableId);
+    const headerRow = table.createTHead().insertRow(0);
+    for(let i = 0; i < TABLE_HEADERS.length; i++){
+        headerRow.insertCell(i).outerHTML = "<th>" + TABLE_HEADERS[i] + "</th>";
+    }        
 }
 
+function addTableRow(tableId, position, content, classes){
+    const table = document.getElementById(tableId);
+    const row = table.insertRow(position);
+    for(let i = 0; i < content.length; i++){
+        const cell = row.insertCell(i);
+        cell.innerHTML = content[i];
+        cell.setAttribute("class", classes[i]);
+    }    
+}
 
 function changeLocalAuthorityInfoElements(localAuthName, siteInfo){    
     const description = "There are " + siteInfo.length + " sites in the local authority:"    
@@ -112,65 +117,57 @@ function changeLocalAuthorityInfoElements(localAuthName, siteInfo){
     })
     console.log("activeSiteInfo:");
     console.log(activeSiteInfo);
-    // clear any info that's currently in the list-sites div        
-    const parentDiv = document.getElementById("list-sites");
-    parentDiv.innerHTML = "";
+
+    // clear any info that's currently in table-sites    
+    document.getElementById("table-sites").innerHTML = "";
+    createTableHead("table-sites");
+
     // add info for each site
+    let i = 1;
+    // TODO: rethink the logic here!!  DO I need both siteInfo and activeSiteInfo?? 
+    // Or can I just iterate through activeSiteInfo?
     siteInfo.forEach( function(d){
-        // debugger;
         // strip any unwanted text from the site-name
         const siteName = d["name"].includes("- ") ? d["name"].substr(d["name"].indexOf("- ") + 2,) : d["name"];
-        // find out if the site is still active
-        const isActive = d["site_still_active"] ? "Yes" : "No";
         let CO = "-", NO2 = "-", O3 = "-", PM10 = "-", PM25 = "-", SO2 = "-";
-        let nameClass = " inactive", activeClass = " inactive", 
-            coClass = " badge badge-pill inactive", no2Class = " badge badge-pill inactive", 
-            o3Class = " badge badge-pill inactive", pm10Class = " badge badge-pill inactive", 
-            pm25Class = " badge badge-pill inactive", so2Class = " badge badge-pill inactive";
+        let coClass = "inactive", no2Class = "inactive", o3Class = "inactive", 
+            pm10Class = "inactive", pm25Class = "inactive", so2Class = "inactive";
+
         // set emissions levels for active sites
         if(d["site_still_active"]){
-            nameClass = "", activeClass = "";
             const mySite = activeSiteInfo.find(function(e) { return e["Site name"] === d["name"]; });
             
             if(mySite["Nitrogen Dioxide"] !== null && mySite["Nitrogen Dioxide"] !== 0) {
                 NO2 = mySite["Nitrogen Dioxide"];
-                no2Class = " badge badge-pill badge-level-"+String(NO2);
+                no2Class = "badge-level-"+String(NO2);
             }
 
             if(mySite["Ozone"] !== null && mySite["Ozone"] !== 0) {
                 O3 = mySite["Ozone"];
-                o3Class = " badge badge-pill badge-level-"+String(O3);
+                // o3Class = " badge badge-pill badge-level-"+String(O3);
+                o3Class = "badge-level-"+String(O3);
             }
             
             if(mySite["PM10 Particulate"] !== null && mySite["PM10 Particulate"] !== 0) {
                 PM10 = mySite["PM10 Particulate"];
-                pm10Class = " badge badge-pill badge-level-"+String(PM10);
+                pm10Class = "badge-level-"+String(PM10);
             }
             
             if(mySite["PM2.5 Particulate"] !== null && mySite["PM2.5 Particulate"] !== 0) {
                 PM25 = mySite["PM2.5 Particulate"];
-                pm25Class = " badge badge-pill badge-level-"+String(PM25);
+                pm25Class = "badge-level-"+String(PM25);
             }
 
             if(mySite["Sulphur Dioxide"] !== null && mySite["Sulphur Dioxide"] !== 0) {
                 SO2 = mySite["Sulphur Dioxide"];
-                so2Class = " badge badge-pill badge-level-"+String(SO2);
+                so2Class = "badge-level-"+String(SO2);
             }
-        } 
-        // add a new row to the Local Authorities panel
-        /** 
-         * CONSIDER - better to do this as a table? Might be more intuitive that way, and 
-         * easier to apply formatting? [Plus, can make it responsive]
-        */
-        let newRow = addElement(parentDiv, "row", null);
-        addElement(newRow, "col-4" + nameClass, siteName);
-        addElement(newRow, "col-1" + activeClass, isActive);
-        addElement(newRow, "col-1" + coClass, CO);
-        addElement(newRow, "col-1" + no2Class, NO2);
-        addElement(newRow, "col-1" + o3Class, O3);
-        addElement(newRow, "col-1" + pm10Class, PM10);
-        addElement(newRow, "col-1" + pm25Class, PM25);
-        addElement(newRow, "col-1" + so2Class, SO2);
+
+            const rowContent = [siteName, CO, NO2, O3, PM10, PM25, SO2];
+            const classes = ["", coClass, no2Class, o3Class, pm10Class, pm25Class, so2Class];
+            addTableRow("table-sites", i, rowContent, classes);
+            i++;
+        }         
     });    
     // document.getElementById('link-emissions').innerHTML = emissionInfo['link'];
 }

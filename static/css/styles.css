@@ -21,12 +21,11 @@
     box-shadow: none;
 }
 
-.badge-pill{    
-    width: 70%;
-    margin-left: 0.3em;
+.badge-pill{
+    /* margin-left: 0.3em;
     margin-right: 0.3em;
     padding-left: 0.1em;
-    padding-right: 0.1em;
+    padding-right: 0.1em; */
 }
 
 .inactive {
