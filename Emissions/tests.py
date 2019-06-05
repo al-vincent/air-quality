@@ -23,6 +23,9 @@ class ServicesTest(TestCase):
     #     -- get_daily_index_on_date...
     def setUp(self):
         self.api = AirQualityApiData(use_DES_proxy=False)
+    
+    def tearDown(self):
+        self.api.dispose()
 
     # ------------------------------------------------------------------------------------
     # Test get_current_emissions_across_london

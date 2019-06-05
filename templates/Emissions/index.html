@@ -25,7 +25,7 @@
     <!-- Navbar and nav options -->
 		<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
       <!-- always-visible logo / branding -->
-      <a class="navbar-brand" href="#">AppName</a>
+      <a class="navbar-brand" href="#">AirQuality</a>
         <!-- Toggler/collapsible Button -->
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsible-navbar">
         <span class="navbar-toggler-icon"></span>
@@ -116,7 +116,7 @@
       <!-- drop-down, map group -->
 
       <!-- emissions information group -->
-      <div class="jumbotron jumbotron-narrow">
+      <div class="jumbotron jumbotron-narrow" id="info-emissions">
         <h3 id="title-emissions">Info about the emission selected</h3>
         
         <!-- emission info card-deck -->
@@ -131,7 +131,7 @@
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Health Effects</h5>
-              <p class="card-text" id="health-effect-emissions">Description of the emission</p>
+              <p class="card-text" id="health-effect-emissions">Health effects of the emission</p>
             </div>
           </div>
         </div>
@@ -153,17 +153,20 @@
       <!-- local authority information group -->
       <div class="jumbotron jumbotron-narrow" id="info-local-authority">
         <div class="row">
-          <h3 id="title-local-authority">Info about the local authority selected</h3>
-          <p id="description-local-authority">Description</p>
-          <p id="list-sites"></p>
+          <h3 id="title-local-authority">Information about the Local Authority selected</h3>
         </div>
+        <div class="row">            
+          <p id="description-local-authority"></p>
+        </div>
+        <div class="container" id="list-sites"></div>
+        <table id="table-sites"></table>       
       </div>
       <!-- local authority information group -->
 
       <!-- illness information group -->
       <div class="jumbotron jumbotron-narrow" id="info-illness">
         <div class="row">
-          <h3>Info about the illness selected</h3>          
+          <h3>Information about the illness selected</h3>          
         </div>
       </div>
       <!-- illness information group -->
@@ -171,12 +174,26 @@
       <!-- 'about' group -->
       <div class="jumbotron jumbotron-narrow" id="info-about">
           <div class="row">
-            <h3>About this app</h3>            
+            <h3>About AirQuality</h3>            
+          </div>
+          <div class="row">
+            <p>
+              This web app displays data collected by the <a href="https://www.kcl.ac.uk/lsm/research/divisions/aes/research/ERG">
+              Environmental Research Group</a> at <a href="https://www.kcl.ac.uk/">King's College London</a>. 
+              The data is collected hourly from sites across Greater London, and is freely available through 
+              <a href="http://api.erg.kcl.ac.uk/AirQuality/help">their API</a>.
+              <br><br>
+              The app is a project in web development and data science. It is written in Python using the
+              <a href="https://www.djangoproject.com">django</a> framework. Mapping is provided by 
+              <a href="https://leafletjs.com/">leaflet</a>, heatmaps by <a href="https://www.patrick-wied.at/static/heatmapjs/plugin-leaflet-layer.html">
+              leaflet-heatmap</a>, and charts by <a href="https://www.chartjs.org/">chartjs</a>. The github 
+              repo is <a href="https://github.com/al-vincent/air-quality">here</a>.
+            </p>
           </div>
         </div>
         <!-- 'about' group -->
 
-      <!-- LEAVE THIS 'TIL LAST!! -->
+      <!-- LEAVE THESE 'TIL LAST!! -->
       <!-- pass data to javascript as JSON -->
       {{ emissions_data|json_script:"emissions-data-id" }}
       {{ emissions_info|json_script:"emissions-info-id" }}

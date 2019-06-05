@@ -20,7 +20,6 @@
 
 "use strict";
 
-// lat, lng, intensity for different types of emissions
 const EMISSION_LEVELS = JSON.parse(document.getElementById('emissions-data-id').textContent);
 console.log("EMISSION_LEVELS:");
 console.log(EMISSION_LEVELS);
@@ -87,15 +86,93 @@ function changeEmissionsInfoElements(emissionInfo){
     document.getElementById('link-emissions').innerHTML = emissionInfo['link'];
 }
 
+function addElement(parentDiv, classNames, content){
+    // create a new div; set its class(es)
+    let newElement = document.createElement("div");
+    newElement.setAttribute("class", classNames);
+    // append the new element to the parent
+    parentDiv.appendChild(newElement);
+    if(content !== null){
+        // add text to the element
+        const textNode = document.createTextNode(content);
+        newElement.appendChild(textNode);
+    }
+    return newElement;
+}
+
+
 function changeLocalAuthorityInfoElements(localAuthName, siteInfo){    
-    const description = "There are " + siteInfo.length + " sites in the local authority. These are:"
-    // debugger;
-    const sitesList = siteInfo.map(function(d) { return d["name"]; });
+    const description = "There are " + siteInfo.length + " sites in the local authority:"    
     document.getElementById('title-local-authority').innerHTML = localAuthName;
     document.getElementById('description-local-authority').innerHTML = description;
-    document.getElementById('list-sites').innerHTML = sitesList;
-    // document.getElementById('link-emissions').innerHTML = emissionInfo['link'];
     
+    // filter EMISSION_LEVELS data to get current emissions for active sites in this LA
+    const activeSiteInfo = EMISSION_LEVELS.filter(function(d){ 
+        return d["Local Authority name"] === localAuthName; 
+    })
+    console.log("activeSiteInfo:");
+    console.log(activeSiteInfo);
+    // clear any info that's currently in the list-sites div        
+    const parentDiv = document.getElementById("list-sites");
+    parentDiv.innerHTML = "";
+    // add info for each site
+    siteInfo.forEach( function(d){
+        // debugger;
+        // strip any unwanted text from the site-name
+        const siteName = d["name"].includes("- ") ? d["name"].substr(d["name"].indexOf("- ") + 2,) : d["name"];
+        // find out if the site is still active
+        const isActive = d["site_still_active"] ? "Yes" : "No";
+        let CO = "-", NO2 = "-", O3 = "-", PM10 = "-", PM25 = "-", SO2 = "-";
+        let nameClass = " inactive", activeClass = " inactive", 
+            coClass = " badge badge-pill inactive", no2Class = " badge badge-pill inactive", 
+            o3Class = " badge badge-pill inactive", pm10Class = " badge badge-pill inactive", 
+            pm25Class = " badge badge-pill inactive", so2Class = " badge badge-pill inactive";
+        // set emissions levels for active sites
+        if(d["site_still_active"]){
+            nameClass = "", activeClass = "";
+            const mySite = activeSiteInfo.find(function(e) { return e["Site name"] === d["name"]; });
+            
+            if(mySite["Nitrogen Dioxide"] !== null && mySite["Nitrogen Dioxide"] !== 0) {
+                NO2 = mySite["Nitrogen Dioxide"];
+                no2Class = " badge badge-pill badge-level-"+String(NO2);
+            }
+
+            if(mySite["Ozone"] !== null && mySite["Ozone"] !== 0) {
+                O3 = mySite["Ozone"];
+                o3Class = " badge badge-pill badge-level-"+String(O3);
+            }
+            
+            if(mySite["PM10 Particulate"] !== null && mySite["PM10 Particulate"] !== 0) {
+                PM10 = mySite["PM10 Particulate"];
+                pm10Class = " badge badge-pill badge-level-"+String(PM10);
+            }
+            
+            if(mySite["PM2.5 Particulate"] !== null && mySite["PM2.5 Particulate"] !== 0) {
+                PM25 = mySite["PM2.5 Particulate"];
+                pm25Class = " badge badge-pill badge-level-"+String(PM25);
+            }
+
+            if(mySite["Sulphur Dioxide"] !== null && mySite["Sulphur Dioxide"] !== 0) {
+                SO2 = mySite["Sulphur Dioxide"];
+                so2Class = " badge badge-pill badge-level-"+String(SO2);
+            }
+        } 
+        // add a new row to the Local Authorities panel
+        /** 
+         * CONSIDER - better to do this as a table? Might be more intuitive that way, and 
+         * easier to apply formatting? [Plus, can make it responsive]
+        */
+        let newRow = addElement(parentDiv, "row", null);
+        addElement(newRow, "col-4" + nameClass, siteName);
+        addElement(newRow, "col-1" + activeClass, isActive);
+        addElement(newRow, "col-1" + coClass, CO);
+        addElement(newRow, "col-1" + no2Class, NO2);
+        addElement(newRow, "col-1" + o3Class, O3);
+        addElement(newRow, "col-1" + pm10Class, PM10);
+        addElement(newRow, "col-1" + pm25Class, PM25);
+        addElement(newRow, "col-1" + so2Class, SO2);
+    });    
+    // document.getElementById('link-emissions').innerHTML = emissionInfo['link'];
 }
 
 function getSitesInLocalAuthority(la_name){
