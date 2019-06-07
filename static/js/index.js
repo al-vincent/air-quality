@@ -40,7 +40,13 @@ const COLOURS = ["#bababa", "#006837", "#1a9850", "#66bd63",
                  "#a6d96a", "#d9ef8b", "#fee08b", "#fdae61", 
                  "#f46d43", "#d73027", "#a50026"]; 
 
-const TABLE_HEADERS = ["Sites", "CO", "NO<sub>2</sub>", "O<sub>3</sub>", "PM10", "PM2.5", "SO<sub>2</sub>"];
+const TABLE_HEADERS = [{"text": "Sites", "class": "col-sites"}, 
+                       {"text": "CO", "class": "col-co"}, 
+                       {"text": "NO<sub>2</sub>", "class": "col-no2"}, 
+                       {"text": "O<sub>3</sub>", "class": "col-o3"}, 
+                       {"text": "PM10", "class": "col-pm10"}, 
+                       {"text": "PM2.5", "class": "col-pm25"}, 
+                       {"text": "SO<sub>2</sub>", "class": "col-so2"}];
 
 // test that we can access the GEOJSON object from the londonBoroughs.geojson file
 // GEOJSON["features"].forEach(function(d) {
@@ -92,7 +98,8 @@ function createTableHead(tableId){
     const table = document.getElementById(tableId);
     const headerRow = table.createTHead().insertRow(0);
     for(let i = 0; i < TABLE_HEADERS.length; i++){
-        headerRow.insertCell(i).outerHTML = "<th>" + TABLE_HEADERS[i] + "</th>";
+        const cellStr = '<th class="' + TABLE_HEADERS[i]["class"] + '">' + TABLE_HEADERS[i]["text"] + '</th>';
+        headerRow.insertCell(i).outerHTML = cellStr;        
     }        
 }
 
@@ -130,8 +137,8 @@ function changeLocalAuthorityInfoElements(localAuthName, siteInfo){
         // strip any unwanted text from the site-name
         const siteName = d["name"].includes("- ") ? d["name"].substr(d["name"].indexOf("- ") + 2,) : d["name"];
         let CO = "-", NO2 = "-", O3 = "-", PM10 = "-", PM25 = "-", SO2 = "-";
-        let coClass = "inactive", no2Class = "inactive", o3Class = "inactive", 
-            pm10Class = "inactive", pm25Class = "inactive", so2Class = "inactive";
+        let coClass = "cell inactive", no2Class = "cell inactive", o3Class = "cell inactive", 
+            pm10Class = "cell inactive", pm25Class = "cell inactive", so2Class = "cell inactive";
 
         // set emissions levels for active sites
         if(d["site_still_active"]){
@@ -139,28 +146,27 @@ function changeLocalAuthorityInfoElements(localAuthName, siteInfo){
             
             if(mySite["Nitrogen Dioxide"] !== null && mySite["Nitrogen Dioxide"] !== 0) {
                 NO2 = mySite["Nitrogen Dioxide"];
-                no2Class = "badge-level-"+String(NO2);
+                no2Class = "cell cell-level-"+String(NO2);
             }
 
             if(mySite["Ozone"] !== null && mySite["Ozone"] !== 0) {
                 O3 = mySite["Ozone"];
-                // o3Class = " badge badge-pill badge-level-"+String(O3);
-                o3Class = "badge-level-"+String(O3);
+                o3Class = "cell cell-level-"+String(O3);
             }
             
             if(mySite["PM10 Particulate"] !== null && mySite["PM10 Particulate"] !== 0) {
                 PM10 = mySite["PM10 Particulate"];
-                pm10Class = "badge-level-"+String(PM10);
+                pm10Class = "cell cell-level-"+String(PM10);
             }
             
             if(mySite["PM2.5 Particulate"] !== null && mySite["PM2.5 Particulate"] !== 0) {
                 PM25 = mySite["PM2.5 Particulate"];
-                pm25Class = "badge-level-"+String(PM25);
+                pm25Class = "cell cell-level-"+String(PM25);
             }
 
             if(mySite["Sulphur Dioxide"] !== null && mySite["Sulphur Dioxide"] !== 0) {
                 SO2 = mySite["Sulphur Dioxide"];
-                so2Class = "badge-level-"+String(SO2);
+                so2Class = "cell cell-level-"+String(SO2);
             }
 
             const rowContent = [siteName, CO, NO2, O3, PM10, PM25, SO2];

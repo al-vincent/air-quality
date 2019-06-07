@@ -21,63 +21,73 @@
     box-shadow: none;
 }
 
-.badge-pill{
-    /* margin-left: 0.3em;
-    margin-right: 0.3em;
-    padding-left: 0.1em;
-    padding-right: 0.1em; */
+.cell{
+    border-style: solid;
+    border-color: #e9ecef;
+    border-width: 2px; 
+    border-radius: 10px;
+    text-align: center;
 }
 
 .inactive {
     color: #C0C0C0
 }
 
-.badge-level-1{
+.cell-level-1{
     color: ivory;
     background-color: #006837;
 }
 
-.badge-level-2{
+.cell-level-2{
     color: ivory;
     background-color: #1a9850;
 }
 
-.badge-level-3{
+.cell-level-3{
     color: ivory;
     background-color: #66bd63;
 }
 
-.badge-level-4{
-    color: ivory;
+.cell-level-4{
+    color: grey;
     background-color: #a6d96a;
 }
 
-.badge-level-5{
-    color: ivory;
+.cell-level-5{
+    color: grey;
     background-color: #d9ef8b;
 }
 
-.badge-level-6{
-    color: ivory;
+.cell-level-6{
+    color: grey;
     background-color: #fee08b;
 }
 
-.badge-level-7{
-    color: ivory;
+.cell-level-7{
+    color: grey;
     background-color: #fdae61;
 }
 
-.badge-level-8{
+.cell-level-8{
     color: ivory;
     background-color: #f46d43;
 }
 
-.badge-level-9{
+.cell-level-9{
     color: ivory;
     background-color: #d73027;
 }
 
-.badge-level-10{
+.cell-level-10{
     color: ivory;
     background-color: #a50026;
+}
+
+.col-sites {
+    width: 40%;
+}
+
+.col-co, .col-no2, .col-o3, .col-pm10, .col-pm25, .col-so2{
+    width: 10%;
+    text-align: center;
 }

@@ -44,10 +44,7 @@
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#info-local-authority">Local Authorities</a>
-          </li>          
-          <li class="nav-item">
-            <a class="nav-link" href="#info-illness">Illnesses</a>
-          </li>
+          </li>                    
           <li class="nav-item">
             <a class="nav-link" href="#info-about">About</a>
           </li>
@@ -65,80 +62,75 @@
 
     <!-- main body -->
     <div class="container">
+      <div class="row">
+        <!-- drop-down, map group -->
+        <div class="jumbotron jumbotron-narrow col-lg-8 col-md-12">
 
+          <!-- drop-down menus row -->
+          <div class="form-row">
+            <!-- emissions drop-down -->
+            <div class="col-md-6 col-sm-12">
+              <select id="list-emissions" class="form-control">
+                {% for emission in emissions_info %}
+                  <option value="{{ emission.code }}">{{ emission.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <!-- /emissions drop-down -->
+
+            <!-- locations drop-down -->
+            <div class="col-md-6 col-sm-12">
+                <select id="list-london-areas" class="form-control">
+                  {% for local_auth in local_auths %}
+                    <option value="{{ local_auth.code }}">{{ local_auth.name }}</option>
+                  {% endfor %}
+                </select>
+            </div>
+            <!-- /locations drop-down -->
+
+          </div>
+          <!-- /drop-down menus row -->
+
+          <!-- map  -->
+          <div class="row">
+            <div class="col-12">
+              <!-- create the div that will hold the map -->
+              <div id="map"></div>          
+            </div>
+          </div>
+          <!-- /map -->
+        </div>      
       <!-- drop-down, map group -->
-      <div class="jumbotron jumbotron-narrow">
 
-        <!-- drop-down menus row -->
-        <div class="form-row">
-          <!-- emissions drop-down -->
-          <div class="col-lg-4 col-sm-12">
-            <select id="list-emissions" class="form-control">
-              {% for emission in emissions_info %}
-                <option value="{{ emission.code }}">{{ emission.name }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <!-- /emissions drop-down -->
+        <div class="jumbotron jumbotron-narrow col-lg-4 col-md-12">          
+          <h3 id="title-emissions">Info about the emission selected</h3>
+          <!-- emission info cards -->
+          <div class="row">
+            <div class="col-lg-12 col-md-6 mt-3">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h5 class="card-title">Description</h5>
+                  <p class="card-text" id="description-emissions">Description of the emission</p>
+                </div>
+              </div>
+            </div>
 
-          <!-- locations drop-down -->
-          <div class="col-lg-4 col-sm-12">
-              <select id="list-london-areas" class="form-control">
-                {% for local_auth in local_auths %}
-                  <option value="{{ local_auth.code }}">{{ local_auth.name }}</option>
-                {% endfor %}
-              </select>
+            <div class="col-lg-12 col-md-6 mt-3 ">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h5 class="card-title">Health Effects</h5>
+                  <p class="card-text" id="health-effect-emissions">Health effects of the emission</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <!-- /locations drop-down -->
-
-          <!-- illnesses drop-down -->
-          <div class="col-lg-4 col-sm-12">
-              <select id="list-illnesses" class="form-control">
-                {% for illness in illness_types %}
-                  <option value="{{ illness.value }}">{{ illness.text }}</option>
-                {% endfor %}
-              </select>
-          </div>
-          <!-- /illnesses drop-down -->
+          <!-- /emission info card-deck -->
         </div>
-        <!-- /drop-down menus row -->
-
-        <!-- map  -->
-        <div class="row">
-          <div class="col-12">
-            <!-- create the div that will hold the map -->
-            <div id="map"></div>          
-          </div>
-        </div>
-        <!-- /map -->
-
       </div>
-      <!-- drop-down, map group -->
 
       <!-- emissions information group -->
       <div class="jumbotron jumbotron-narrow" id="info-emissions">
-        <h3 id="title-emissions">Info about the emission selected</h3>
-        
-        <!-- emission info card-deck -->
-        <div class="card-deck">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Description</h5>
-              <p class="card-text" id="description-emissions">Description of the emission</p>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Health Effects</h5>
-              <p class="card-text" id="health-effect-emissions">Health effects of the emission</p>
-            </div>
-          </div>
-        </div>
-        <!-- /emission info card-deck -->
-
         <p class="row" id="link-emissions"></p>
-
         <!-- emissions graphs -->
         <div class="row" id=graph-emission-history>
           <div class="chart-container">
@@ -155,20 +147,19 @@
         <div class="row">
           <h3 id="title-local-authority">Information about the Local Authority selected</h3>
         </div>
-        <div class="row">            
-          <p id="description-local-authority"></p>
+        <div class="row">
+          <div class="col-lg-6 col-md-12">
+            <div class="row">            
+              <p id="description-local-authority"></p>
+            </div>
+            <table id="table-sites" class="table table-sm table-responsive"></table>
+          </div>
+          <div id="info-site" class="col-lg-6 col-md-12">
+            <p>Site info</p>
+          </div>
         </div>
-        <table id="table-sites" class="table table-sm"></table>       
       </div>
       <!-- local authority information group -->
-
-      <!-- illness information group -->
-      <div class="jumbotron jumbotron-narrow" id="info-illness">
-        <div class="row">
-          <h3>Information about the illness selected</h3>          
-        </div>
-      </div>
-      <!-- illness information group -->
 
       <!-- 'about' group -->
       <div class="jumbotron jumbotron-narrow" id="info-about">
