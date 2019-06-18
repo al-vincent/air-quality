@@ -14,12 +14,12 @@
  *      -- Alternative: average site values across a LocalAuth, and display as circles?
  * - For LocalAuths; display site values as numbers in circles (a few options for adding nums)
  *      -- Need to hide circles in other local auths, or set opacity = 0.1 or something
- *      -- Also need to use different colours for 'dead' sites
- *      -- When the map is resized (zoomed), change the size of the circlemarker <== may be ok?
  * */ 
 
 "use strict";
 
+// NOTE: wrt the consts below - should these be in main()?  E.g. am I adding to the global
+// namespace by putting them here?
 const EMISSION_LEVELS = JSON.parse(document.getElementById('emissions-data-id').textContent);
 console.log("EMISSION_LEVELS:");
 console.log(EMISSION_LEVELS);
@@ -47,6 +47,43 @@ const TABLE_HEADERS = [{"text": "Sites", "class": "col-sites"},
                        {"text": "PM10", "class": "col-pm10"}, 
                        {"text": "PM2.5", "class": "col-pm25"}, 
                        {"text": "SO<sub>2</sub>", "class": "col-so2"}];
+
+const CO_GRAPH = null, NO2_GRAPH = null, O3_GRAPH = null, 
+      PM10_GRAPH = null, PM25_GRAPH = null, SO2_GRAPH = null;
+
+const EMISSION_LOOKUP = {"CO": {"name": "Carbon Monoxide",
+                                "elementID": "chart-co",
+                                "backgroundColor": "rgba(255, 0, 0, 0.3)",
+                                "borderColor": "rgba(255, 0, 0, 0.6)",
+                                "chartObject": CO_GRAPH},
+                        "NO2": {"name": "Nitrogen Dioxide",
+                                "elementID": "chart-no2",
+                                "backgroundColor": "rgba(0, 255, 0, 0.3)",
+                                "borderColor": "rgba(0, 255, 0, 0.6)",
+                                "chartObject": NO2_GRAPH},
+                        "O3": {"name": "Ozone",
+                               "elementID": "chart-o3",
+                               "backgroundColor": "rgba(0, 0, 255, 0.3)",
+                               "borderColor": "rgba(0, 0, 255, 0.6)",
+                               "chartObject": O3_GRAPH},
+                        "PM10": {"name": "PM10 Particulate",
+                                 "elementID": "chart-pm10",
+                                 "backgroundColor": "rgba(33, 120, 120, 0.3)",
+                                 "borderColor": "rgba(33, 120, 120, 0.6)",
+                                 "chartObject": PM10_GRAPH},
+                        "PM25": {"name": "PM2.5 Particulate",
+                                 "elementID": "chart-pm25",
+                                 "backgroundColor": "rgba(120, 33, 120, 0.3)",
+                                 "borderColor": "rgba(120, 33, 120, 0.6)",
+                                 "chartObject": PM25_GRAPH},
+                        "SO2": {"name": "Sulphur Dioxide",
+                                "elementID": "chart-so2",
+                                "backgroundColor": "rgba(120, 120, 33, 0.3)",
+                                "borderColor": "rgba(120, 120, 33, 0.6)",
+                                "chartObject": SO2_GRAPH}
+                        };
+
+const API_ROOT = "http://api.erg.kcl.ac.uk/AirQuality/";
 
 // test that we can access the GEOJSON object from the londonBoroughs.geojson file
 // GEOJSON["features"].forEach(function(d) {
@@ -91,91 +128,224 @@ function changeEmissionsInfoElements(emissionInfo){
     document.getElementById('title-emissions').innerHTML = emissionInfo['name'];
     document.getElementById('description-emissions').innerHTML = emissionInfo['description'];
     document.getElementById('health-effect-emissions').innerHTML = emissionInfo['health_effect'];
-    document.getElementById('link-emissions').innerHTML = emissionInfo['link'];
+    // document.getElementById('link-emissions').innerHTML = emissionInfo['link'];
 }
 
-function createTableHead(tableId){
+function createTableHead(tableId, headers){
     const table = document.getElementById(tableId);
     const headerRow = table.createTHead().insertRow(0);
-    for(let i = 0; i < TABLE_HEADERS.length; i++){
-        const cellStr = '<th class="' + TABLE_HEADERS[i]["class"] + '">' + TABLE_HEADERS[i]["text"] + '</th>';
+    for(let i = 0; i < headers.length; i++){
+        const cellStr = '<th class="' + headers[i]["class"] + '">' + headers[i]["text"] + '</th>';
         headerRow.insertCell(i).outerHTML = cellStr;        
     }        
 }
 
-function addTableRow(tableId, position, content, classes){
+// function addTableRow(tableId, position, content, classes){
+function addTableRow(tableId, position, info){
     const table = document.getElementById(tableId);
     const row = table.insertRow(position);
-    for(let i = 0; i < content.length; i++){
+    for(let i = 0; i < info.length; i++){
         const cell = row.insertCell(i);
-        cell.innerHTML = content[i];
-        cell.setAttribute("class", classes[i]);
+        cell.innerHTML = info[i]["value"];
+        cell.setAttribute("class", info[i]["class"]);
     }    
 }
 
+function parseResponse(jsonResponse){
+    let data = {"CO":{"Timestamp":[], "Value":[]}, 
+                "NO2":{"Timestamp":[], "Value":[]}, 
+                "O3":{"Timestamp":[], "Value":[]}, 
+                "PM10":{"Timestamp":[], "Value":[]}, 
+                "PM25":{"Timestamp":[], "Value":[]}, 
+                "SO2":{"Timestamp":[], "Value":[]}};
+    jsonResponse["AirQualityData"]["Data"].forEach(function(d){
+        if(d["@Value"] !== "" && d["@SpeciesCode"] in data){
+            // data[d["@SpeciesCode"]].push({"Timestamp": new Date(d["@MeasurementDateGMT"]), 
+            //                               "Value": parseFloat(d["@Value"])});
+            data[d["@SpeciesCode"]]["Timestamp"].push(d["@MeasurementDateGMT"].slice(-8)); 
+            data[d["@SpeciesCode"]]["Value"].push(parseFloat(d["@Value"]));                                           
+        }
+    });
+    return data;
+}
+
+function clearGraphs(){
+    // clear all charts, i.e. DOM elements with class 'chart'
+    const keys = Object.keys(EMISSION_LOOKUP);
+    keys.forEach(function(d){
+        if(EMISSION_LOOKUP[d]["chartObject"] !== null){
+            EMISSION_LOOKUP[d]["chartObject"].destroy();
+        }
+    })
+
+    // remove all chart-container classes
+    const chartRows = document.getElementsByClassName("row-chart");
+    for(let i = 0; i < chartRows.length; i++){
+        const oldClasses = chartRows[i].className;
+        const newClasses = oldClasses.replace("chart-container", "row-hidden");
+        chartRows[i].className = newClasses;
+    }
+}
+
+function plotDaysEmissionsGraph(emissionCode, graphData){
+    const barChartData = {
+        labels: graphData["Timestamp"], 
+        datasets: [{
+            // label: EMISSION_LOOKUP[emissionCode]["name"],
+            backgroundColor: EMISSION_LOOKUP[emissionCode]["backgroundColor"],
+            borderColor: EMISSION_LOOKUP[emissionCode]["borderColor"],
+            borderWidth: 1,
+            data: graphData["Value"]
+		}]
+    };
+
+    const element = document.getElementById(EMISSION_LOOKUP[emissionCode]["elementID"]);
+    element.parentElement.classList.remove("row-hidden");
+    element.parentElement.classList.add("chart-container");
+    const ctx = element.getContext('2d');
+    EMISSION_LOOKUP[emissionCode]["chartObject"] = new Chart(ctx, {
+        type: 'bar',
+        data: barChartData,
+        options: {
+            // Elements options apply to all of the options unless overridden in a dataset
+            // In this case, we are setting the border of each horizontal bar to be 2px wide
+            elements: {
+                rectangle: {
+                    borderWidth: 2,
+                }
+            },
+            responsive: true,
+            maintainAspectRatio: false, 
+            legend: {
+                display: false,
+            },            
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true, 
+                    }
+                }]
+            }
+        }
+    });
+}
+
+function makeRequest(URL) {
+    const httpRequest = new XMLHttpRequest();
+
+    if (!httpRequest) {
+      console.log('Giving up :( Cannot create an XMLHTTP instance');
+      return false;
+    }
+
+    httpRequest.open('GET', URL, true);
+    httpRequest.onreadystatechange = function() {
+        if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+            console.log("Success! JSON response:")
+            const response = JSON.parse(this.responseText);
+            // console.log(response);
+            // console.log(parseResponse(response));
+            const emissionsData = parseResponse(response);
+            const keys = Object.keys(emissionsData);
+            keys.forEach(function(d){
+                if(emissionsData[d]["Value"].length > 0){
+                    plotDaysEmissionsGraph(d, emissionsData[d]);
+                }
+            });
+        }
+    };
+    httpRequest.send();
+}
+
+function formatDate(date){
+    const dateArray = date.toDateString().split(" ");
+    return dateArray[2] + dateArray[1] + dateArray[3];
+}
+
+function showSiteEmissions(siteName){
+    clearGraphs();
+    const siteCode = SITES.find(function(d) { return d["name"] === siteName })["code"];
+    const today = new Date();
+    const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    const startDate = formatDate(today);
+    const endDate = formatDate(tomorrow);
+    const url = API_ROOT.concat("Data/Site/SiteCode=", siteCode, "/StartDate=", startDate, "/EndDate=", endDate, "/Json");
+    makeRequest(url);
+}
+
 function changeLocalAuthorityInfoElements(localAuthName, siteInfo){    
-    const description = "There are " + siteInfo.length + " sites in the local authority:"    
     document.getElementById('title-local-authority').innerHTML = localAuthName;
-    document.getElementById('description-local-authority').innerHTML = description;
     
     // filter EMISSION_LEVELS data to get current emissions for active sites in this LA
+    // NOTE: this is necessary, because EMISSION_LEVELS contains the current emissions for 
+    // each site, and siteInfo doesn't. 
     const activeSiteInfo = EMISSION_LEVELS.filter(function(d){ 
         return d["Local Authority name"] === localAuthName; 
-    })
+    });
     console.log("activeSiteInfo:");
     console.log(activeSiteInfo);
 
-    // clear any info that's currently in table-sites    
-    document.getElementById("table-sites").innerHTML = "";
-    createTableHead("table-sites");
+    // update the active-site count
+    const description = "There are " + activeSiteInfo.length + " active sites in the local authority:"
+    document.getElementById('description-local-authority').innerHTML = description;
 
+    // clear any info that's currently in table-active-sites    
+    document.getElementById("table-active-sites").innerHTML = "";
+    // if there are active sites, create the table header
+    if(activeSiteInfo.length > 0) { createTableHead("table-active-sites", TABLE_HEADERS); };
     // add info for each site
     let i = 1;
-    // TODO: rethink the logic here!!  DO I need both siteInfo and activeSiteInfo?? 
-    // Or can I just iterate through activeSiteInfo?
+    let inactiveSiteInfo = [];
+    let firstSite = null;
     siteInfo.forEach( function(d){
+        if(i === 1){ firstSite = d["name"]; }
         // strip any unwanted text from the site-name
         const siteName = d["name"].includes("- ") ? d["name"].substr(d["name"].indexOf("- ") + 2,) : d["name"];
-        let CO = "-", NO2 = "-", O3 = "-", PM10 = "-", PM25 = "-", SO2 = "-";
-        let coClass = "cell inactive", no2Class = "cell inactive", o3Class = "cell inactive", 
-            pm10Class = "cell inactive", pm25Class = "cell inactive", so2Class = "cell inactive";
-
+        // create a series of variables to hold the emissions info and the corresponding class
+        let carbonMonoxide = {"value": "-", "class": "cell inactive"};
+        let nitrogenDioxide = {"value": "-", "class": "cell inactive"};
+        let ozone = {"value": "-", "class": "cell inactive"};
+        let pm10 = {"value": "-", "class": "cell inactive"};
+        let pm25 = {"value": "-", "class": "cell inactive"};
+        let sulphurDioxide = {"value": "-", "class": "cell inactive"};
         // set emissions levels for active sites
         if(d["site_still_active"]){
             const mySite = activeSiteInfo.find(function(e) { return e["Site name"] === d["name"]; });
             
             if(mySite["Nitrogen Dioxide"] !== null && mySite["Nitrogen Dioxide"] !== 0) {
-                NO2 = mySite["Nitrogen Dioxide"];
-                no2Class = "cell cell-level-"+String(NO2);
+                nitrogenDioxide["value"] = mySite["Nitrogen Dioxide"];
+                nitrogenDioxide["class"] = "cell cell-level-"+String(nitrogenDioxide["value"]);
             }
 
             if(mySite["Ozone"] !== null && mySite["Ozone"] !== 0) {
-                O3 = mySite["Ozone"];
-                o3Class = "cell cell-level-"+String(O3);
+                ozone["value"] = mySite["Ozone"];
+                ozone["class"] = "cell cell-level-"+String(ozone["value"]);
             }
             
             if(mySite["PM10 Particulate"] !== null && mySite["PM10 Particulate"] !== 0) {
-                PM10 = mySite["PM10 Particulate"];
-                pm10Class = "cell cell-level-"+String(PM10);
+                pm10["value"] = mySite["PM10 Particulate"];
+                pm10["class"] = "cell cell-level-"+String(pm10["value"]);
             }
             
             if(mySite["PM2.5 Particulate"] !== null && mySite["PM2.5 Particulate"] !== 0) {
-                PM25 = mySite["PM2.5 Particulate"];
-                pm25Class = "cell cell-level-"+String(PM25);
+                pm25["value"] = mySite["PM2.5 Particulate"];
+                pm25["class"] = "cell cell-level-"+String(pm25["value"]);
             }
 
             if(mySite["Sulphur Dioxide"] !== null && mySite["Sulphur Dioxide"] !== 0) {
-                SO2 = mySite["Sulphur Dioxide"];
-                so2Class = "cell cell-level-"+String(SO2);
+                sulphurDioxide["value"] = mySite["Sulphur Dioxide"];
+                sulphurDioxide["class"] = "cell cell-level-"+String(sulphurDioxide["value"]);
             }
 
-            const rowContent = [siteName, CO, NO2, O3, PM10, PM25, SO2];
-            const classes = ["", coClass, no2Class, o3Class, pm10Class, pm25Class, so2Class];
-            addTableRow("table-sites", i, rowContent, classes);
+            const data = [{"value": siteName, "class": i}, carbonMonoxide, nitrogenDioxide, ozone, pm10, pm25, sulphurDioxide];
+            addTableRow("table-active-sites", i, data);
             i++;
-        }         
+        } else {
+            inactiveSiteInfo.push(d);
+        }
     });    
     // document.getElementById('link-emissions').innerHTML = emissionInfo['link'];
+    showSiteEmissions(firstSite);
 }
 
 function getSitesInLocalAuthority(la_name){
@@ -452,79 +622,6 @@ function main(){
     zoomIn.addEventListener("click", function(){
         console.log("Current zoom: " + map.getZoom());
     });
-
-    // ----------------------------------------------------------------------------------------------
-    // Generate emissions history graph
-    // ----------------------------------------------------------------------------------------------
-    function getDates(numDays) {
-        let dates = [];
-        const today = new Date();        
-        dates.push(today.toLocaleDateString('en-GB'));
-        for(let i = 1; i < numDays; i++){
-            const newDate = new Date(today.getFullYear(), 
-                                     today.getMonth(), 
-                                     today.getDate() - i);
-            dates.push(newDate.toLocaleDateString('en-GB'));
-        }
-        return dates.reverse();
-    };
-
-	const horizontalBarChartData = {
-        labels: getDates(7), //['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-        datasets: [{
-            label: 'Nitrogen Dioxide',
-            backgroundColor: 'rgba(255, 0, 0, 0.3)',
-            borderColor: 'rgba(255, 0, 0, 0.6)',
-            borderWidth: 1,
-            data: [7, 7, 8, 7, 8, 9, 10]
-		}, {
-            label: 'Sulphur Dioxide',
-            backgroundColor: 'rgba(0, 0, 255, 0.3)',
-            borderColor: 'rgba(0, 0, 255, 0.6)',
-            data: [1, 3, 3, 2, 4, 5, 4]
-        }, {
-            label: 'Ozone',
-            backgroundColor: 'rgba(0, 255, 0, 0.3)',
-            borderColor: 'rgba(0, 255, 0, 0.6)',
-            data: [2, 2, 3, 3, 2, 2, 3]
-        }, {
-            label: 'Carbon Monoxide',
-            backgroundColor: 'rgba(33, 120, 120, 0.3)',
-            borderColor: 'rgba(33, 120, 120, 0.6)',
-            data: [3, 4, 3, 2, 3, 4, 5]
-        }]
-
-    };
-
-    window.onload = function() {
-        const ctx = document.getElementById('canvas-emission-history-graph').getContext('2d');
-        window.myHorizontalBar = new Chart(ctx, {
-            type: 'bar',
-            data: horizontalBarChartData,
-            options: {
-                // Elements options apply to all of the options unless overridden in a dataset
-                // In this case, we are setting the border of each horizontal bar to be 2px wide
-                elements: {
-                    rectangle: {
-                        borderWidth: 2,
-                    }
-                },
-                responsive: true,
-                maintainAspectRatio: false, 
-                legend: {
-                    position: 'top',
-                },            
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true, 
-                        }
-                    }]
-                }
-            }
-        });
-
-    };
 }
 
 // run the script

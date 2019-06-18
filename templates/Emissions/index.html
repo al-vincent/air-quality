@@ -81,6 +81,7 @@
             <!-- locations drop-down -->
             <div class="col-md-6 col-sm-12">
                 <select id="list-london-areas" class="form-control">
+                    <option value="0">All Local Authorities</option>
                   {% for local_auth in local_auths %}
                     <option value="{{ local_auth.code }}">{{ local_auth.name }}</option>
                   {% endfor %}
@@ -128,34 +129,47 @@
         </div>
       </div>
 
-      <!-- emissions information group -->
-      <div class="jumbotron jumbotron-narrow" id="info-emissions">
-        <p class="row" id="link-emissions"></p>
-        <!-- emissions graphs -->
-        <div class="row" id=graph-emission-history>
-          <div class="chart-container">
-            <h5>Placeholder plot</h5>
-            <canvas id="canvas-emission-history-graph"></canvas>
-          </div>
-        </div>
-        <!-- /emissions graphs -->
-      </div>
-      <!-- emissions information group -->
-
       <!-- local authority information group -->
       <div class="jumbotron jumbotron-narrow" id="info-local-authority">
         <div class="row">
-          <h3 id="title-local-authority">Information about the Local Authority selected</h3>
-        </div>
-        <div class="row">
           <div class="col-lg-6 col-md-12">
+            <div class="row">
+              <h3 id="title-local-authority">Information about the Local Authority</h3>
+            </div>
             <div class="row">            
               <p id="description-local-authority"></p>
             </div>
-            <table id="table-sites" class="table table-sm table-responsive"></table>
+            <div class="row">
+              <table id="table-active-sites" class="table table-sm table-responsive"></table>
+            </div>
+            <div class="row">
+              <table id="table-inactive-sites" class="table table-sm"></table>
+            </div>
           </div>
           <div id="info-site" class="col-lg-6 col-md-12">
-            <p>Site info</p>
+            <div class="row">
+              <div id="name-site">
+                <h3>Site name</h3>
+              </div>
+            </div>
+            <div class="row row-chart row-hidden">
+              <canvas id="chart-co"></canvas>
+            </div>
+            <div class="row row-chart row-hidden">
+                <canvas id="chart-no2"></canvas>
+            </div>
+            <div class="row row-chart row-hidden">
+                <canvas id="chart-o3"></canvas>
+            </div>
+            <div class="row row-chart row-hidden">
+                <canvas id="chart-pm10"></canvas>
+            </div>
+            <div class="row row-chart row-hidden">
+                <canvas id="chart-pm25"></canvas>
+            </div>
+            <div class="row row-chart row-hidden">
+                <canvas id="chart-so2"></canvas>
+            </div>
           </div>
         </div>
       </div>
