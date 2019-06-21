@@ -25,7 +25,7 @@ class ServicesTest(TestCase):
         self.api = AirQualityApiData(use_DES_proxy=False)
     
     def tearDown(self):
-        self.api.dispose()
+        del self.api
 
     # ------------------------------------------------------------------------------------
     # Test get_current_emissions_across_london
