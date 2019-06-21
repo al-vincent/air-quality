@@ -40,13 +40,19 @@ const COLOURS = ["#bababa", "#006837", "#1a9850", "#66bd63",
                  "#a6d96a", "#d9ef8b", "#fee08b", "#fdae61", 
                  "#f46d43", "#d73027", "#a50026"]; 
 
-const TABLE_HEADERS = [{"text": "Sites", "class": "col-sites"}, 
-                       {"text": "CO", "class": "col-co"}, 
-                       {"text": "NO<sub>2</sub>", "class": "col-no2"}, 
-                       {"text": "O<sub>3</sub>", "class": "col-o3"}, 
-                       {"text": "PM10", "class": "col-pm10"}, 
-                       {"text": "PM2.5", "class": "col-pm25"}, 
-                       {"text": "SO<sub>2</sub>", "class": "col-so2"}];
+// TODO: is there any point to these classes?? (Also below)                 
+const ACTIVE_TABLE_HEADERS = [{"text": "Sites", "class": "col-sites"}, 
+                              {"text": "CO", "class": "col-co"}, 
+                              {"text": "NO<sub>2</sub>", "class": "col-no2"},
+                              {"text": "O<sub>3</sub>", "class": "col-o3"},
+                              {"text": "PM10", "class": "col-pm10"},
+                              {"text": "PM2.5", "class": "col-pm25"},
+                              {"text": "SO<sub>2</sub>", "class": "col-so2"}];
+
+const INACTIVE_TABLE_HEADERS = [{"text": "Sites", "class": "inactive"},
+                                {"text": "Opened", "class": "inactive"},
+                                {"text": "Closed", "class": "inactive"},
+                                {"text": "Type", "class": "inactive"}];
 
 const CO_GRAPH = null, NO2_GRAPH = null, O3_GRAPH = null, 
       PM10_GRAPH = null, PM25_GRAPH = null, SO2_GRAPH = null;
@@ -159,11 +165,10 @@ function parseResponse(jsonResponse){
                 "PM25":{"Timestamp":[], "Value":[]}, 
                 "SO2":{"Timestamp":[], "Value":[]}};
     jsonResponse["AirQualityData"]["Data"].forEach(function(d){
-        if(d["@Value"] !== "" && d["@SpeciesCode"] in data){
-            // data[d["@SpeciesCode"]].push({"Timestamp": new Date(d["@MeasurementDateGMT"]), 
-            //                               "Value": parseFloat(d["@Value"])});
-            data[d["@SpeciesCode"]]["Timestamp"].push(d["@MeasurementDateGMT"].slice(-8)); 
-            data[d["@SpeciesCode"]]["Value"].push(parseFloat(d["@Value"]));                                           
+        if(d["@SpeciesCode"] in data){
+            data[d["@SpeciesCode"]]["Timestamp"].push(d["@MeasurementDateGMT"].slice(-8));
+            const value = d["@Value"] !== "" ? parseFloat(d["@Value"]) : 0;
+            data[d["@SpeciesCode"]]["Value"].push(value);
         }
     });
     return data;
@@ -243,12 +248,14 @@ function makeRequest(URL) {
         if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
             console.log("Success! JSON response:")
             const response = JSON.parse(this.responseText);
-            // console.log(response);
-            // console.log(parseResponse(response));
             const emissionsData = parseResponse(response);
+            console.log(emissionsData);
             const keys = Object.keys(emissionsData);
             keys.forEach(function(d){
-                if(emissionsData[d]["Value"].length > 0){
+                const allZero = emissionsData[d]["Value"].every(function(e){ 
+                    return e === 0;
+                });
+                if(emissionsData[d]["Value"].length > 0 && !allZero){
                     plotDaysEmissionsGraph(d, emissionsData[d]);
                 }
             });
@@ -265,6 +272,7 @@ function formatDate(date){
 function showSiteEmissions(siteName){
     clearGraphs();
     const siteCode = SITES.find(function(d) { return d["name"] === siteName })["code"];
+    document.getElementById("name-site").innerHTML = siteName;
     const today = new Date();
     const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
     const startDate = formatDate(today);
@@ -272,6 +280,8 @@ function showSiteEmissions(siteName){
     const url = API_ROOT.concat("Data/Site/SiteCode=", siteCode, "/StartDate=", startDate, "/EndDate=", endDate, "/Json");
     makeRequest(url);
 }
+
+
 
 function changeLocalAuthorityInfoElements(localAuthName, siteInfo){    
     document.getElementById('title-local-authority').innerHTML = localAuthName;
@@ -285,65 +295,58 @@ function changeLocalAuthorityInfoElements(localAuthName, siteInfo){
     console.log("activeSiteInfo:");
     console.log(activeSiteInfo);
 
-    // update the active-site count
-    const description = "There are " + activeSiteInfo.length + " active sites in the local authority:"
-    document.getElementById('description-local-authority').innerHTML = description;
-
-    // clear any info that's currently in table-active-sites    
+    // setup active site info
+    let description = "There are " + activeSiteInfo.length + " active sites in the local authority:"
+    document.getElementById('description-active-sites').innerHTML = description;
     document.getElementById("table-active-sites").innerHTML = "";
-    // if there are active sites, create the table header
-    if(activeSiteInfo.length > 0) { createTableHead("table-active-sites", TABLE_HEADERS); };
+    if(activeSiteInfo.length > 0) { createTableHead("table-active-sites", ACTIVE_TABLE_HEADERS); };
+    
+    // setup inactive site info
+    description = "There are " + (siteInfo.length - activeSiteInfo.length) + " inactive sites in the local authority:"
+    document.getElementById('description-inactive-sites').innerHTML = description;
+    document.getElementById("table-inactive-sites").innerHTML = "";
+    if(activeSiteInfo.length < siteInfo.length ){createTableHead("table-inactive-sites", INACTIVE_TABLE_HEADERS); };
+
     // add info for each site
-    let i = 1;
+    let i = 1, j = 1;
     let inactiveSiteInfo = [];
     let firstSite = null;
     siteInfo.forEach( function(d){
         if(i === 1){ firstSite = d["name"]; }
         // strip any unwanted text from the site-name
-        const siteName = d["name"].includes("- ") ? d["name"].substr(d["name"].indexOf("- ") + 2,) : d["name"];
-        // create a series of variables to hold the emissions info and the corresponding class
-        let carbonMonoxide = {"value": "-", "class": "cell inactive"};
-        let nitrogenDioxide = {"value": "-", "class": "cell inactive"};
-        let ozone = {"value": "-", "class": "cell inactive"};
-        let pm10 = {"value": "-", "class": "cell inactive"};
-        let pm25 = {"value": "-", "class": "cell inactive"};
-        let sulphurDioxide = {"value": "-", "class": "cell inactive"};
+        const siteName = d["name"].includes("- ") ? d["name"].substr(d["name"].indexOf("- ") + 2,) : d["name"];        
         // set emissions levels for active sites
         if(d["site_still_active"]){
+            const keys = Object.keys(EMISSION_LOOKUP);
+            const emissions = Array(keys.length).fill({"value": "-", "class": "cell inactive"})
+            emissions.splice(0,0,{"value": siteName, "class": i});
+
             const mySite = activeSiteInfo.find(function(e) { return e["Site name"] === d["name"]; });
-            
-            if(mySite["Nitrogen Dioxide"] !== null && mySite["Nitrogen Dioxide"] !== 0) {
-                nitrogenDioxide["value"] = mySite["Nitrogen Dioxide"];
-                nitrogenDioxide["class"] = "cell cell-level-"+String(nitrogenDioxide["value"]);
-            }
+            let k = 1;
+            keys.forEach(function(elem){
+                if(mySite[EMISSION_LOOKUP[elem]["name"]] !== null && mySite[EMISSION_LOOKUP[elem]["name"]] !== 0){
+                    const val = { "value": mySite[EMISSION_LOOKUP[elem]["name"]], 
+                                  "class": "cell cell-level-"+String(mySite[EMISSION_LOOKUP[elem]["name"]])};
+                    emissions[k] = val;
+                }
+                k++;
+            });
 
-            if(mySite["Ozone"] !== null && mySite["Ozone"] !== 0) {
-                ozone["value"] = mySite["Ozone"];
-                ozone["class"] = "cell cell-level-"+String(ozone["value"]);
-            }
-            
-            if(mySite["PM10 Particulate"] !== null && mySite["PM10 Particulate"] !== 0) {
-                pm10["value"] = mySite["PM10 Particulate"];
-                pm10["class"] = "cell cell-level-"+String(pm10["value"]);
-            }
-            
-            if(mySite["PM2.5 Particulate"] !== null && mySite["PM2.5 Particulate"] !== 0) {
-                pm25["value"] = mySite["PM2.5 Particulate"];
-                pm25["class"] = "cell cell-level-"+String(pm25["value"]);
-            }
-
-            if(mySite["Sulphur Dioxide"] !== null && mySite["Sulphur Dioxide"] !== 0) {
-                sulphurDioxide["value"] = mySite["Sulphur Dioxide"];
-                sulphurDioxide["class"] = "cell cell-level-"+String(sulphurDioxide["value"]);
-            }
-
-            const data = [{"value": siteName, "class": i}, carbonMonoxide, nitrogenDioxide, ozone, pm10, pm25, sulphurDioxide];
-            addTableRow("table-active-sites", i, data);
+            addTableRow("table-active-sites", i, emissions);
             i++;
         } else {
             inactiveSiteInfo.push(d);
-        }
-    });    
+            const data = [{"value": siteName, "class": "inactive"},
+                          {"value": new Date(d["site_date_open"]).toDateString().slice(4,), "class": "inactive"},
+                          {"value": new Date(d["site_date_closed"]).toDateString().slice(4,), "class": "inactive"},
+                          {"value": d["site_type"], "class": "inactive"}];
+            addTableRow("table-inactive-sites", j, data);
+            j++;
+        }        
+    });
+    console.log("inactiveSiteInfo:");
+    console.log(inactiveSiteInfo); 
+    
     // document.getElementById('link-emissions').innerHTML = emissionInfo['link'];
     showSiteEmissions(firstSite);
 }

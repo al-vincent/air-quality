@@ -62,7 +62,10 @@
 
     <!-- main body -->
     <div class="container">
+
+      <!-- drop-downs, map, emission info group -->
       <div class="row">
+
         <!-- drop-down, map group -->
         <div class="jumbotron jumbotron-narrow col-lg-8 col-md-12">
 
@@ -101,8 +104,9 @@
           </div>
           <!-- /map -->
         </div>      
-      <!-- drop-down, map group -->
+        <!-- drop-down, map group -->
 
+        <!-- emission info group -->
         <div class="jumbotron jumbotron-narrow col-lg-4 col-md-12">          
           <h3 id="title-emissions">Info about the emission selected</h3>
           <!-- emission info cards -->
@@ -127,29 +131,51 @@
           </div>
           <!-- /emission info card-deck -->
         </div>
+        <!-- /emission info group -->
+
       </div>
+      <!-- /drop-downs, map, emission info group -->
 
       <!-- local authority information group -->
       <div class="jumbotron jumbotron-narrow" id="info-local-authority">
         <div class="row">
+
+          <!-- LA summary info -->
           <div class="col-lg-6 col-md-12">
+            <!-- name of local authority -->
             <div class="row">
               <h3 id="title-local-authority">Information about the Local Authority</h3>
             </div>
+            <!-- /name of local authority -->
+
+            <!-- active sites info -->
             <div class="row">            
-              <p id="description-local-authority"></p>
+              <p id="description-active-sites"></p>
             </div>
             <div class="row">
               <table id="table-active-sites" class="table table-sm table-responsive"></table>
             </div>
-            <div class="row">
-              <table id="table-inactive-sites" class="table table-sm"></table>
+            <!-- /active sites info -->
+
+            <hr class="mt-3 mb-3">
+
+            <!-- inactive sites info -->            
+            <div class="row">            
+              <p id="description-inactive-sites"></p>
             </div>
+            <div class="row">
+              <table id="table-inactive-sites" class="table table-sm table-responsive"></table>
+            </div>
+            <!-- /inactive sites info -->
+
           </div>
+          <!--/ LA summary info -->
+
+          <!-- site info -->
           <div id="info-site" class="col-lg-6 col-md-12">
             <div class="row">
-              <div id="name-site">
-                <h3>Site name</h3>
+              <div>
+                <h3 id="name-site">Site name</h3>
               </div>
             </div>
             <div class="row row-chart row-hidden">
@@ -171,6 +197,8 @@
                 <canvas id="chart-so2"></canvas>
             </div>
           </div>
+          <!-- /site info -->
+
         </div>
       </div>
       <!-- local authority information group -->
@@ -190,8 +218,8 @@
               The app is a project in web development and data science. It is written in Python using the
               <a href="https://www.djangoproject.com">django</a> framework. Mapping is provided by 
               <a href="https://leafletjs.com/">leaflet</a>, heatmaps by <a href="https://www.patrick-wied.at/static/heatmapjs/plugin-leaflet-layer.html">
-              leaflet-heatmap</a>, and charts by <a href="https://www.chartjs.org/">chartjs</a>. The github 
-              repo is <a href="https://github.com/al-vincent/air-quality">here</a>.
+              leaflet-heatmap</a>, and charts by <a href="https://www.chartjs.org/">chartjs</a>. Source code is on 
+              <a href="https://github.com/al-vincent/air-quality">this github repo</a>.
             </p>
           </div>
         </div>
