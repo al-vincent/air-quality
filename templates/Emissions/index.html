@@ -25,7 +25,7 @@
     <!-- Navbar and nav options -->
 		<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
       <!-- always-visible logo / branding -->
-      <a class="navbar-brand" href="#">AppName</a>
+      <a class="navbar-brand" href="#">AirQuality</a>
         <!-- Toggler/collapsible Button -->
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsible-navbar">
         <span class="navbar-toggler-icon"></span>
@@ -44,10 +44,7 @@
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#info-local-authority">Local Authorities</a>
-          </li>          
-          <li class="nav-item">
-            <a class="nav-link" href="#info-illness">Illnesses</a>
-          </li>
+          </li>                    
           <li class="nav-item">
             <a class="nav-link" href="#info-about">About</a>
           </li>
@@ -66,117 +63,169 @@
     <!-- main body -->
     <div class="container">
 
-      <!-- drop-down, map group -->
-      <div class="jumbotron jumbotron-narrow">
+      <!-- drop-downs, map, emission info group -->
+      <div class="row">
 
-        <!-- drop-down menus row -->
-        <div class="form-row">
-          <!-- emissions drop-down -->
-          <div class="col-lg-4 col-sm-12">
-            <select id="list-emissions" class="form-control">
-              {% for emission in emissions_info %}
-                <option value="{{ emission.code }}">{{ emission.name }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <!-- /emissions drop-down -->
+        <!-- drop-down, map group -->
+        <div class="jumbotron jumbotron-narrow col-lg-8 col-md-12">
 
-          <!-- locations drop-down -->
-          <div class="col-lg-4 col-sm-12">
-              <select id="list-london-areas" class="form-control">
-                {% for local_auth in local_auths %}
-                  <option value="{{ local_auth.code }}">{{ local_auth.name }}</option>
+          <!-- drop-down menus row -->
+          <div class="form-row">
+            <!-- emissions drop-down -->
+            <div class="col-md-6 col-sm-12">
+              <select id="list-emissions" class="form-control">
+                {% for emission in emissions_info %}
+                  <option value="{{ emission.code }}">{{ emission.name }}</option>
                 {% endfor %}
               </select>
+            </div>
+            <!-- /emissions drop-down -->
+
+            <!-- locations drop-down -->
+            <div class="col-md-6 col-sm-12">
+                <select id="list-london-areas" class="form-control">
+                    <option value="0">All Local Authorities</option>
+                  {% for local_auth in local_auths %}
+                    <option value="{{ local_auth.code }}">{{ local_auth.name }}</option>
+                  {% endfor %}
+                </select>
+            </div>
+            <!-- /locations drop-down -->
+
           </div>
-          <!-- /locations drop-down -->
+          <!-- /drop-down menus row -->
 
-          <!-- illnesses drop-down -->
-          <div class="col-lg-4 col-sm-12">
-              <select id="list-illnesses" class="form-control">
-                {% for illness in illness_types %}
-                  <option value="{{ illness.value }}">{{ illness.text }}</option>
-                {% endfor %}
-              </select>
-          </div>
-          <!-- /illnesses drop-down -->
-        </div>
-        <!-- /drop-down menus row -->
-
-        <!-- map  -->
-        <div class="row">
-          <div class="col-12">
-            <!-- create the div that will hold the map -->
-            <div id="map"></div>          
-          </div>
-        </div>
-        <!-- /map -->
-
-      </div>
-      <!-- drop-down, map group -->
-
-      <!-- emissions information group -->
-      <div class="jumbotron jumbotron-narrow">
-        <h3 id="title-emissions">Info about the emission selected</h3>
-        
-        <!-- emission info card-deck -->
-        <div class="card-deck">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Description</h5>
-              <p class="card-text" id="description-emissions">Description of the emission</p>
+          <!-- map  -->
+          <div class="row">
+            <div class="col-12">
+              <!-- create the div that will hold the map -->
+              <div id="map"></div>          
             </div>
           </div>
+          <!-- /map -->
+        </div>      
+        <!-- drop-down, map group -->
 
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Health Effects</h5>
-              <p class="card-text" id="health-effect-emissions">Description of the emission</p>
+        <!-- emission info group -->
+        <div class="jumbotron jumbotron-narrow col-lg-4 col-md-12">          
+          <h3 id="title-emissions">Info about the emission selected</h3>
+          <!-- emission info cards -->
+          <div class="row">
+            <div class="col-lg-12 col-md-6 mt-3">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h5 class="card-title">Description</h5>
+                  <p class="card-text" id="description-emissions">Description of the emission</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-12 col-md-6 mt-3 ">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h5 class="card-title">Health Effects</h5>
+                  <p class="card-text" id="health-effect-emissions">Health effects of the emission</p>
+                </div>
+              </div>
             </div>
           </div>
+          <!-- /emission info card-deck -->
         </div>
-        <!-- /emission info card-deck -->
+        <!-- /emission info group -->
 
-        <p class="row" id="link-emissions"></p>
-
-        <!-- emissions graphs -->
-        <div class="row" id=graph-emission-history>
-          <div class="chart-container">
-            <h5>Placeholder plot</h5>
-            <canvas id="canvas-emission-history-graph"></canvas>
-          </div>
-        </div>
-        <!-- /emissions graphs -->
       </div>
-      <!-- emissions information group -->
+      <!-- /drop-downs, map, emission info group -->
 
       <!-- local authority information group -->
       <div class="jumbotron jumbotron-narrow" id="info-local-authority">
         <div class="row">
-          <h3 id="title-local-authority">Info about the local authority selected</h3>
-          <p id="description-local-authority">Description</p>
-          <p id="list-sites"></p>
+
+          <!-- LA summary info -->
+          <div class="col-lg-6 col-md-12">
+            <!-- name of local authority -->
+            <div class="row">
+              <h3 id="title-local-authority">Information about the Local Authority</h3>
+            </div>
+            <!-- /name of local authority -->
+
+            <!-- active sites info -->
+            <div class="row">            
+              <p id="description-active-sites"></p>
+            </div>
+            <div class="row">
+              <table id="table-active-sites" class="table table-sm table-responsive"></table>
+            </div>
+            <!-- /active sites info -->
+
+            <hr class="mt-3 mb-3">
+
+            <!-- inactive sites info -->            
+            <div class="row">            
+              <p id="description-inactive-sites"></p>
+            </div>
+            <div class="row">
+              <table id="table-inactive-sites" class="table table-sm table-responsive"></table>
+            </div>
+            <!-- /inactive sites info -->
+
+          </div>
+          <!--/ LA summary info -->
+
+          <!-- site info -->
+          <div id="info-site" class="col-lg-6 col-md-12">
+            <div class="row">
+              <div>
+                <h3 id="name-site">Site name</h3>
+              </div>
+            </div>
+            <div class="row row-chart row-hidden">
+              <canvas id="chart-co"></canvas>
+            </div>
+            <div class="row row-chart row-hidden">
+                <canvas id="chart-no2"></canvas>
+            </div>
+            <div class="row row-chart row-hidden">
+                <canvas id="chart-o3"></canvas>
+            </div>
+            <div class="row row-chart row-hidden">
+                <canvas id="chart-pm10"></canvas>
+            </div>
+            <div class="row row-chart row-hidden">
+                <canvas id="chart-pm25"></canvas>
+            </div>
+            <div class="row row-chart row-hidden">
+                <canvas id="chart-so2"></canvas>
+            </div>
+          </div>
+          <!-- /site info -->
+
         </div>
       </div>
       <!-- local authority information group -->
 
-      <!-- illness information group -->
-      <div class="jumbotron jumbotron-narrow" id="info-illness">
-        <div class="row">
-          <h3>Info about the illness selected</h3>          
-        </div>
-      </div>
-      <!-- illness information group -->
-
       <!-- 'about' group -->
       <div class="jumbotron jumbotron-narrow" id="info-about">
           <div class="row">
-            <h3>About this app</h3>            
+            <h3>About AirQuality</h3>            
+          </div>
+          <div class="row">
+            <p>
+              This web app displays data collected by the <a href="https://www.kcl.ac.uk/lsm/research/divisions/aes/research/ERG">
+              Environmental Research Group</a> at <a href="https://www.kcl.ac.uk/">King's College London</a>. 
+              The data is collected hourly from sites across Greater London, and is freely available through 
+              <a href="http://api.erg.kcl.ac.uk/AirQuality/help">their API</a>.
+              <br><br>
+              The app is a project in web development and data science. It is written in Python using the
+              <a href="https://www.djangoproject.com">django</a> framework. Mapping is provided by 
+              <a href="https://leafletjs.com/">leaflet</a>, heatmaps by <a href="https://www.patrick-wied.at/static/heatmapjs/plugin-leaflet-layer.html">
+              leaflet-heatmap</a>, and charts by <a href="https://www.chartjs.org/">chartjs</a>. Source code is on 
+              <a href="https://github.com/al-vincent/air-quality">this github repo</a>.
+            </p>
           </div>
         </div>
         <!-- 'about' group -->
 
-      <!-- LEAVE THIS 'TIL LAST!! -->
+      <!-- LEAVE THESE 'TIL LAST!! -->
       <!-- pass data to javascript as JSON -->
       {{ emissions_data|json_script:"emissions-data-id" }}
       {{ emissions_info|json_script:"emissions-info-id" }}
