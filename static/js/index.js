@@ -89,7 +89,7 @@ const EMISSION_LOOKUP = {"CO": {"name": "Carbon Monoxide",
                                 "chartObject": SO2_GRAPH}
                         };
 
-const API_ROOT = "http://api.erg.kcl.ac.uk/AirQuality/";
+const API_ROOT = "https://api.erg.kcl.ac.uk/AirQuality/";
 
 // test that we can access the GEOJSON object from the londonBoroughs.geojson file
 // GEOJSON["features"].forEach(function(d) {
