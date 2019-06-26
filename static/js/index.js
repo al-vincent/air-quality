@@ -186,9 +186,7 @@ function clearGraphs(){
     // remove all chart-container classes
     const chartRows = document.getElementsByClassName("row-chart");
     for(let i = 0; i < chartRows.length; i++){
-        const oldClasses = chartRows[i].className;
-        const newClasses = oldClasses.replace("chart-container", "row-hidden");
-        chartRows[i].className = newClasses;
+        chartRows[i].classList.add("row-hidden");
     }
 }
 
@@ -205,8 +203,7 @@ function plotDaysEmissionsGraph(emissionCode, graphData){
     };
 
     const element = document.getElementById(EMISSION_LOOKUP[emissionCode]["elementID"]);
-    element.parentElement.classList.remove("row-hidden");
-    element.parentElement.classList.add("chart-container");
+    element.parentElement.parentElement.classList.remove("row-hidden");
     const ctx = element.getContext('2d');
     EMISSION_LOOKUP[emissionCode]["chartObject"] = new Chart(ctx, {
         type: 'bar',
