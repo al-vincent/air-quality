@@ -40,7 +40,11 @@ const COLOURS = ["#bababa", "#006837", "#1a9850", "#66bd63",
                  "#a6d96a", "#d9ef8b", "#fee08b", "#fdae61", 
                  "#f46d43", "#d73027", "#a50026"]; 
 
-// TODO: is there any point to these classes?? (Also below)                 
+const TIMES = ["00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", 
+               "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", 
+               "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"];
+
+// TODO: is there any point to these classes??           
 const ACTIVE_TABLE_HEADERS = [{"text": "Sites", "class": "col-sites"}, 
                               {"text": "CO", "class": "col-co"}, 
                               {"text": "NO<sub>2</sub>", "class": "col-no2"},
@@ -49,6 +53,7 @@ const ACTIVE_TABLE_HEADERS = [{"text": "Sites", "class": "col-sites"},
                               {"text": "PM2.5", "class": "col-pm25"},
                               {"text": "SO<sub>2</sub>", "class": "col-so2"}];
 
+// There *IS* a point to these classes, as the text is purposefully greyed
 const INACTIVE_TABLE_HEADERS = [{"text": "Sites", "class": "inactive"},
                                 {"text": "Opened", "class": "inactive"},
                                 {"text": "Closed", "class": "inactive"},
@@ -90,12 +95,6 @@ const EMISSION_LOOKUP = {"CO": {"name": "Carbon Monoxide",
                         };
 
 const API_ROOT = "https://api.erg.kcl.ac.uk/AirQuality/";
-
-// test that we can access the GEOJSON object from the londonBoroughs.geojson file
-// GEOJSON["features"].forEach(function(d) {
-//     console.log(d["properties"]["name"]);    
-// })
-
 
 // ***************************************************************************************************
 // Helper functions 
@@ -158,19 +157,21 @@ function addTableRow(tableId, position, info){
 }
 
 function parseResponse(jsonResponse){
-    let data = {"CO":{"Timestamp":[], "Value":[]}, 
-                "NO2":{"Timestamp":[], "Value":[]}, 
-                "O3":{"Timestamp":[], "Value":[]}, 
-                "PM10":{"Timestamp":[], "Value":[]}, 
-                "PM25":{"Timestamp":[], "Value":[]}, 
-                "SO2":{"Timestamp":[], "Value":[]}};
+    let data = {"CO": [], "NO2": [], "O3": [], "PM10": [], "PM25": [], "SO2": []};
+    // get today's air quality data
     jsonResponse["AirQualityData"]["Data"].forEach(function(d){
         if(d["@SpeciesCode"] in data){
-            data[d["@SpeciesCode"]]["Timestamp"].push(d["@MeasurementDateGMT"].slice(-8));
             const value = d["@Value"] !== "" ? parseFloat(d["@Value"]) : 0;
-            data[d["@SpeciesCode"]]["Value"].push(value);
+            data[d["@SpeciesCode"]].push(value);
         }
     });
+    // each array should have a value for the times 00:00 -> 23:00, so add trailing
+    // zeros for any timestamp where there isn't data yet.
+    const keys = Object.keys(data);
+    keys.forEach(function(d){
+        const numZeros = TIMES.length - data[d].length;
+        data[d].concat(Array(numZeros).fill(0));
+    })
     return data;
 }
 
@@ -191,14 +192,13 @@ function clearGraphs(){
 }
 
 function plotDaysEmissionsGraph(emissionCode, graphData){
-    const barChartData = {
-        labels: graphData["Timestamp"], 
+    const barChartData = {        
+        labels: TIMES, 
         datasets: [{
-            // label: EMISSION_LOOKUP[emissionCode]["name"],
             backgroundColor: EMISSION_LOOKUP[emissionCode]["backgroundColor"],
             borderColor: EMISSION_LOOKUP[emissionCode]["borderColor"],
             borderWidth: 1,
-            data: graphData["Value"]
+            data: graphData 
 		}]
     };
 
@@ -249,10 +249,11 @@ function makeRequest(URL) {
             console.log(emissionsData);
             const keys = Object.keys(emissionsData);
             keys.forEach(function(d){
-                const allZero = emissionsData[d]["Value"].every(function(e){ 
+                // if the graph data is all zeros, we don't want to plot it
+                const allZero = emissionsData[d].every(function(e){ 
                     return e === 0;
                 });
-                if(emissionsData[d]["Value"].length > 0 && !allZero){
+                if(emissionsData[d].length > 0 && !allZero){
                     plotDaysEmissionsGraph(d, emissionsData[d]);
                 }
             });
@@ -277,8 +278,6 @@ function showSiteEmissions(siteName){
     const url = API_ROOT.concat("Data/Site/SiteCode=", siteCode, "/StartDate=", startDate, "/EndDate=", endDate, "/Json");
     makeRequest(url);
 }
-
-
 
 function changeLocalAuthorityInfoElements(localAuthName, siteInfo){    
     document.getElementById('title-local-authority').innerHTML = localAuthName;
