@@ -1,36 +1,36 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
-import unittest
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 import time
 
-class NewVisitorTest(unittest.TestCase):
-    
-    # NOTE: setUp and tearDown are special unittest built-ins; DON'T try to
-    # use different naming conventions, or they won't do what they're supposed 
-    # to! [setUp runs before any tests, tearDown runs once all tests are 
-    # complete]
+from Emissions.models import Species, LocalAuthority, Site
 
+class NewVisitorTest(StaticLiveServerTestCase):
     def setUp(self):
-        print("Browser opened")
+        Species.objects.create(name="Carbon Monoxide", code="CO")
+        Species.objects.create(name="Nitrogen Dioxide", code="NO2")
+
+
         self.browser = webdriver.Chrome()
+        self.browser.implicitly_wait(5)
+        # Cornelius opens the homepage
+        self.browser.get(self.live_server_url)
     
     def tearDown(self):
         self.browser.quit()
     
-    def open_page_test(self):
-        # Cornelius opens the homepage
-        self.browser.get("http://localhost:8000")
-
+    def test_open_page(self):        
         # He sees that the page's title includes the phrase "Air Quality"
         self.assertIn("Air Quality", self.browser.title)
     
+    def test_map_exists(self):
         # He is presented with a map of the London area
         emissions_map = self.browser.find_element_by_id("map")
-        # NOTE: need more than this. Can I test if a Leaflet map is actually displayed?
-        # E.g. check against the class? [I assume Leaflet maps have a particular class]
+        # Check that the map element has the class "leaflet-container"
         self.assertIn("leaflet-container", emissions_map.get_attribute("class"))
 
+    def test_emissions_menu_items(self):
         # He sees a drop-down menu to choose an emissions type to view. There is 
         # a default value, of carbon monoxide
         emissions_menu = self.browser.find_element_by_id("list-emissions")
@@ -43,47 +43,30 @@ class NewVisitorTest(unittest.TestCase):
         self.assertEqual( option.get_attribute("value"), "CO" )
         self.assertEqual( option.get_attribute("text"), "Carbon Monoxide" )       
 
+    def test_local_auths_menu_items(self):
         # Cornelius sees a drop-down for selecting an area of London. The default value
-        # is "All"
+        # is "All Local Authorities"
         geographic_menu = self.browser.find_element_by_id("list-london-areas")
         # check that the element is a select element
         Select(geographic_menu)
         # get the first option in the list
         option = geographic_menu.find_element_by_tag_name("option")
-        self.assertEqual( option.get_attribute("value"), "adur" )
-        self.assertEqual( option.text, "Adur" )
+        self.assertEqual( option.get_attribute("value"), "0" )
+        self.assertEqual( option.text, "All Local Authorities" )
 
-        # Cornelius sees a selection box that shows different types of illness. 
-        # The default value is asthma
-        illness_menu = self.browser.find_element_by_id("list-illnesses")
-        # check that the element is a select element
-        Select(illness_menu)
-        # get the first option in the list
-        option = illness_menu.find_element_by_tag_name("option")
-        self.assertEqual( option.get_attribute("value"), "asthma" )
-        self.assertEqual( option.text, "Asthma" )
-        
-        # Information about this illness is shown further down the page.
-        illness_info = self.browser.find_element_by_id("info-illness")
-        self.assertEqual(
-            illness_info.text, "Info about the illness selected"
-        )
-
+    def test_emissions_info_population(self):
         # Information about the emissions type is shown further down again.
-        illness_info = self.browser.find_element_by_id("info-emissions")
-        self.assertEqual(
-            illness_info.text, "Info about the emission selected"
-        )
+        emissions_title = self.browser.find_element_by_id("title-emissions")
+        self.assertEqual(emissions_title.text, "Nitrogen Dioxide")
     
     def change_default_values(self):
-        # Cornelius opens the homepage
-        self.browser.get("http://localhost:8000")
+        # # Cornelius opens the homepage
+        # self.browser.get(self.live_server_url)
 
         # he sees a map and three drop-down menus
         emissions_map = self.browser.find_element_by_id("map")
         emissions_menu = self.browser.find_element_by_id("list-emissions")
         geographic_menu = self.browser.find_element_by_id("list-london-areas")
-        illness_menu = self.browser.find_element_by_id("list-illnesses")
 
         # Cornelius changes the value in the emissions drop-down to nitrogen dioxide, 
         # and the map updates to show the new values        
@@ -95,22 +78,6 @@ class NewVisitorTest(unittest.TestCase):
         time.sleep(1)   
 
         # The map re-renders to show this area, at a zoom level of <...??...>
-
-        # He changes the illness to emphesema, and the information updates.
-        illness_menu.send_keys("Emphesema")
-        time.sleep(1)
-        # illness_info = self.browser.find_element_by_id("info-illness")
-        # self.assertEqual(
-        #     illness_info.get_attribute("...??..."), "Info about the updated illness"
-        # )
         pass
     
-    def runTest(self):
-        self.open_page_test()
-        self.change_default_values()
-        
-        # add a test fail, to remind us to finish the tests
-        self.fail("Finish the test")
 
-if __name__ == "__main__":
-    unittest.main(warnings="ignore")

@@ -4,13 +4,12 @@ from Emissions.models import LocalAuthority, Species, Site
 
 def index(request):
     """
-    Get dummy data from services.py, pass this to the index.html page to render
-    (populates the drop-down menus)
+    Get data from the database / LondonAir API and pass it to the html page.
     """
     # get placeholder data
     data = AirQualityApiData()    
     # get a list of London local authorities from db
-    local_auths = list(LocalAuthority.objects.all().values())    
+    local_auths = list(LocalAuthority.objects.all().values())  
     # get a list of sites from the db
     sites = list(Site.objects.all().values())
     # get a list of species from db
