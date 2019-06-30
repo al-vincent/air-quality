@@ -1,12 +1,21 @@
-dist: xenial
+dist: trusty
 language: python
 python: 3.6
+env:
+    - MOZ_HEADLESS=1
 addons:
   postgresql: "9.6"
+  firefox: latest
 install:
   - pip install -r requirements.txt
 before_script:
-  - psql -c 'create database travis_ci_test;' -U postgres
+  - psql -c 'create database travis_ci_test;' -U postgres 
+  - wget https://github.com/mozilla/geckodriver/releases/download/v0.24.0/geckodriver-v0.24.0-linux64.tar.gz
+  - mkdir geckodriver
+  - tar -xzf geckodriver-v0.24.0-linux64.tar.gz -C geckodriver
+  - export PATH=$PATH:$PWD/geckodriver
+  - geckodriver --version
+  - export MOZ_HEADLESS=1
 script: 
   - python manage.py test
 deploy:
@@ -15,4 +24,3 @@ deploy:
   app: air-quality
   run: python manage.py migrate
   on: master
-  

@@ -120,8 +120,8 @@ class ServicesTest(TestCase):
 class HomePageTest(TestCase):
 
     def setUp(self):
-        emission1 = Species.objects.create(name="Carbon Monoxide")
-        emission2 = Species.objects.create(name="Nitrogen Dioxide")
+        emission1 = Species.objects.create(name="Carbon Monoxide", code="CO")
+        emission2 = Species.objects.create(name="Nitrogen Dioxide", code="NO2")
 
     def test_emissions_count(self):
         saved_emissions = Species.objects.all()
