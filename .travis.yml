@@ -3,7 +3,7 @@ language: python
 python: 3.6
 env:
   matrix:
-    - SELENIUM-WEBDRIVER=default
+    - SELENIUM_WEBDRIVER=default
 addons:
   postgresql: "9.6"
   chrome: stable

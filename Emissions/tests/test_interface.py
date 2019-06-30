@@ -11,7 +11,7 @@ class NewVisitorTest(StaticLiveServerTestCase):
         Species.objects.create(name="Carbon Monoxide", code="CO")
         Species.objects.create(name="Nitrogen Dioxide", code="NO2")
 
-
+        
         self.browser = webdriver.Chrome()
         self.browser.implicitly_wait(5)
         # Cornelius opens the homepage
