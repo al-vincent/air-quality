@@ -30,13 +30,13 @@ class NewVisitorTest(StaticLiveServerTestCase):
         # He sees that the page's title includes the phrase "Air Quality"
         self.assertIn("Air Quality", self.browser.title)
     
-    def test_map_exists(self):
+    # def test_map_exists(self):
         # He is presented with a map of the London area
         emissions_map = self.browser.find_element_by_id("map")
         # Check that the map element has the class "leaflet-container"
         self.assertIn("leaflet-container", emissions_map.get_attribute("class"))
 
-    def test_emissions_menu_items(self):
+    # def test_emissions_menu_items(self):
         # He sees a drop-down menu to choose an emissions type to view. There is 
         # a default value, of carbon monoxide
         emissions_menu = self.browser.find_element_by_id("list-emissions")
@@ -49,7 +49,7 @@ class NewVisitorTest(StaticLiveServerTestCase):
         self.assertEqual( option.get_attribute("value"), "CO" )
         self.assertEqual( option.get_attribute("text"), "Carbon Monoxide" )       
 
-    def test_local_auths_menu_items(self):
+    # def test_local_auths_menu_items(self):
         # Cornelius sees a drop-down for selecting an area of London. The default value
         # is "All Local Authorities"
         geographic_menu = self.browser.find_element_by_id("list-london-areas")
@@ -60,12 +60,12 @@ class NewVisitorTest(StaticLiveServerTestCase):
         self.assertEqual( option.get_attribute("value"), "0" )
         self.assertEqual( option.text, "All Local Authorities" )
 
-    def test_emissions_info_population(self):
+    # def test_emissions_info_population(self):
         # Information about the emissions type is shown further down again.
         emissions_title = self.browser.find_element_by_id("title-emissions")
         self.assertEqual(emissions_title.text, "Nitrogen Dioxide")
     
-    def change_default_values(self):
+    # def change_default_values(self):
         # # Cornelius opens the homepage
         # self.browser.get(self.live_server_url)
 
@@ -85,5 +85,3 @@ class NewVisitorTest(StaticLiveServerTestCase):
 
         # The map re-renders to show this area, at a zoom level of <...??...>
         pass
-    
-
