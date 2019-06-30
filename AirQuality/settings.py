@@ -33,19 +33,6 @@ else:
 
 # ALLOWED_HOSTS = ['air-quality.herokuapp.com', 'localhost', '127.0.0.1', '[::1]']
 
-SELENIUM_WEBDRIVERS = {
-	"default": {
-		"callable": webdriver.Chrome,
-		"args": (),
-		"kwargs": {},
-	},
-	"firefox": {
-		"callable": webdriver.Firefox,
-		"args": (),
-		"kwargs": {},
-	},
-}
-
 # Application definition
 INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',

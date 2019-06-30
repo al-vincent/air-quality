@@ -2,8 +2,6 @@ dist: trusty
 language: python
 python: 3.6
 env:
-  matrix:
-    - SELENIUM_WEBDRIVER=firefox
     - MOZ_HEADLESS=1
 addons:
   postgresql: "9.6"
