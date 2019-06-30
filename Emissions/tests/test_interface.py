@@ -3,7 +3,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 import time
-
+import os
 from Emissions.models import Species, LocalAuthority, Site
 
 class NewVisitorTest(StaticLiveServerTestCase):
@@ -11,8 +11,14 @@ class NewVisitorTest(StaticLiveServerTestCase):
         Species.objects.create(name="Carbon Monoxide", code="CO")
         Species.objects.create(name="Nitrogen Dioxide", code="NO2")
 
-        
-        self.browser = webdriver.Chrome()
+        try:
+            if '/app' in os.environ['HOME']:
+                from selenium.webdriver.firefox.options import Options
+                options = Options()
+                options.add_argument('-headless')
+                self.browser = webdriver.Firefox(firefox_options=options)
+        except KeyError:
+            self.browser = webdriver.Chrome()
         self.browser.implicitly_wait(5)
         # Cornelius opens the homepage
         self.browser.get(self.live_server_url)

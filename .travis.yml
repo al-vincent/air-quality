@@ -3,20 +3,21 @@ language: python
 python: 3.6
 env:
   matrix:
-    - SELENIUM_WEBDRIVER=default
+    - SELENIUM_WEBDRIVER=firefox
+    - MOZ_HEADLESS=1
 addons:
   postgresql: "9.6"
-  chrome: stable
-  apt:
-    packages:
-      - chromium-chromedriver
+  firefox: latest
 install:
   - pip install -r requirements.txt
 before_script:
-  - psql -c 'create database travis_ci_test;' -U postgres
-  - wget http://chromedriver.storage.googleapis.com/75.0.3770.90/chromedriver_linux64.zip
-  - unzip chromedriver_linux64.zip -d /home/travis/virtualenv/python3.6/bin/
-  - export CHROME_BIN=chromium-browser
+  - psql -c 'create database travis_ci_test;' -U postgres 
+  - wget https://github.com/mozilla/geckodriver/releases/download/v0.18.0/geckodriver-v0.18.0-linux64.tar.gz
+  - mkdir geckodriver
+  - tar -xzf geckodriver-v0.18.0-linux64.tar.gz -C geckodriver
+  - export PATH=$PATH:$PWD/geckodriver
+  - geckodriver --version
+  - export MOZ_HEADLESS=1
 script: 
   - python manage.py test
 deploy:
@@ -25,4 +26,3 @@ deploy:
   app: air-quality
   run: python manage.py migrate
   on: master
-  
