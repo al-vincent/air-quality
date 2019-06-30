@@ -14,8 +14,8 @@ install:
   - pip install -r requirements.txt
 before_script:
   - psql -c 'create database travis_ci_test;' -U postgres
-  - wget http://chromedriver.storage.googleapis.com/75.0.3770.90/chromedriver_win32.zip
-  - unzip chromedriver_win32.zip -d /home/travis/virtualenv/python3.6/bin/
+  - wget http://chromedriver.storage.googleapis.com/75.0.3770.90/chromedriver_linux64.zip
+  - unzip chromedriver_linux64.zip -d /home/travis/virtualenv/python3.6/bin/
   - export CHROME_BIN=chromium-browser
 script: 
   - python manage.py test
