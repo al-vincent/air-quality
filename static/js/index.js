@@ -279,7 +279,11 @@ function showSiteEmissions(siteName){
     makeRequest(url);
 }
 
-function changeLocalAuthorityInfoElements(localAuthName, siteInfo){    
+function changeLocalAuthorityInfoElements(localAuthName, siteInfo){
+    // unhide the local-authority jumbotron
+    document.getElementById("info-local-authority").classList.remove("row-hidden");
+
+    // set the title to be the local auth selected
     document.getElementById('title-local-authority').innerHTML = localAuthName;
     
     // filter EMISSION_LEVELS data to get current emissions for active sites in this LA
@@ -322,7 +326,7 @@ function changeLocalAuthorityInfoElements(localAuthName, siteInfo){
             keys.forEach(function(elem){
                 if(mySite[EMISSION_LOOKUP[elem]["name"]] !== null && mySite[EMISSION_LOOKUP[elem]["name"]] !== 0){
                     const val = { "value": mySite[EMISSION_LOOKUP[elem]["name"]], 
-                                  "class": "cell cell-level-"+String(mySite[EMISSION_LOOKUP[elem]["name"]])};
+                                "class": "cell cell-level-"+String(mySite[EMISSION_LOOKUP[elem]["name"]])};
                     emissions[k] = val;
                 }
                 k++;
@@ -333,9 +337,9 @@ function changeLocalAuthorityInfoElements(localAuthName, siteInfo){
         } else {
             inactiveSiteInfo.push(d);
             const data = [{"value": siteName, "class": "inactive"},
-                          {"value": new Date(d["site_date_open"]).toDateString().slice(4,), "class": "inactive"},
-                          {"value": new Date(d["site_date_closed"]).toDateString().slice(4,), "class": "inactive"},
-                          {"value": d["site_type"], "class": "inactive"}];
+                        {"value": new Date(d["site_date_open"]).toDateString().slice(4,), "class": "inactive"},
+                        {"value": new Date(d["site_date_closed"]).toDateString().slice(4,), "class": "inactive"},
+                        {"value": d["site_type"], "class": "inactive"}];
             addTableRow("table-inactive-sites", j, data);
             j++;
         }        
@@ -582,29 +586,37 @@ function main(){
         // get the newly-selected element
         const newLocalAuth = document.getElementById('list-london-areas').selectedOptions[0].text;
 
-        // get the boundary coords of the local authority and move the map to centre on it
-        const newGeoJson = getGeojsonForLocalAuthority(newLocalAuth);
-        map.fitBounds(getMapLocalAuthBounds(newGeoJson[0]["geometry"]["coordinates"][0][0]));
-        
-        // get rid of the existing local authority polygon layer, and draw a new LA polygon
-        map.removeLayer(geoJsonLayer);
-        geoJsonLayer = L.geoJSON(newGeoJson).addTo(map);
+        if(newLocalAuth !== "All Local Authorities") {
+            // get the boundary coords of the local authority and move the map to centre on it
+            const newGeoJson = getGeojsonForLocalAuthority(newLocalAuth);
+            map.fitBounds(getMapLocalAuthBounds(newGeoJson[0]["geometry"]["coordinates"][0][0]));
+            
+            // get rid of the existing local authority polygon layer, and draw a new LA polygon
+            map.removeLayer(geoJsonLayer);
+            geoJsonLayer = L.geoJSON(newGeoJson).addTo(map);
 
-        console.log("Sites:");
-        console.log(getSitesInLocalAuthority(newLocalAuth));
-        // TODO: use the above to get the emissions collection sites in the local auth
-        const sites = getSitesInLocalAuthority(newLocalAuth);
-        // sites.forEach(function(d) {
-        //     L.circle([d["latitude"], d["longitude"]], {
-        //         color: 'red',
-        //         fillColor: '#f03',
-        //         fillOpacity: 0.5,
-        //         alt: d["name"],
-        //         radius: 300
-        //     }).addTo(map);
-        // });
+            console.log("Sites:");
+            console.log(getSitesInLocalAuthority(newLocalAuth));
+            
+            const sites = getSitesInLocalAuthority(newLocalAuth);
+            // sites.forEach(function(d) {
+            //     L.circle([d["latitude"], d["longitude"]], {
+            //         color: 'red',
+            //         fillColor: '#f03',
+            //         fillOpacity: 0.5,
+            //         alt: d["name"],
+            //         radius: 300
+            //     }).addTo(map);
+            // });
 
-        changeLocalAuthorityInfoElements(newLocalAuth, sites);
+            changeLocalAuthorityInfoElements(newLocalAuth, sites);
+        } else {
+            // TODO: reset the map view, either to the user location or to the London map
+            const element = document.getElementById("info-local-authority");
+            if(!element.classList.contains("row-hidden")) {
+                element.classList.add("row-hidden");
+            }
+        }
     });
 
     // map.on('zoomend', function() {
@@ -621,6 +633,10 @@ function main(){
     zoomIn.addEventListener("click", function(){
         console.log("Current zoom: " + map.getZoom());
     });
+
+    // ----------------------------------------------------------------------------------------------
+    // Add an event listener for the zoom-in button, to log current zoom level
+    // ----------------------------------------------------------------------------------------------
 }
 
 // run the script
