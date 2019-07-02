@@ -145,15 +145,20 @@ function createTableHead(tableId, headers){
     }        
 }
 
-// function addTableRow(tableId, position, content, classes){
 function addTableRow(tableId, position, info){
     const table = document.getElementById(tableId);
     const row = table.insertRow(position);
+    row.setAttribute('data-site', info[0]["value"]);
     for(let i = 0; i < info.length; i++){
         const cell = row.insertCell(i);
-        cell.innerHTML = info[i]["value"];
+        const text = i === 0 ? shortSiteName(info[i]["value"]) : info[i]["value"];
+        cell.innerHTML = text;
         cell.setAttribute("class", info[i]["class"]);
-    }    
+    }
+    row.addEventListener("click", function(){
+        // console.log(this.getAttribute("data-site"));
+        showSiteEmissions(this.getAttribute("data-site"));
+    });  
 }
 
 function parseResponse(jsonResponse){
@@ -279,6 +284,10 @@ function showSiteEmissions(siteName){
     makeRequest(url);
 }
 
+function shortSiteName(fullSiteName){
+    return fullSiteName.includes("- ") ? fullSiteName.substr(fullSiteName.indexOf("- ") + 2,) : fullSiteName;
+}
+
 function changeLocalAuthorityInfoElements(localAuthName, siteInfo){
     // unhide the local-authority jumbotron
     document.getElementById("info-local-authority").classList.remove("row-hidden");
@@ -314,19 +323,20 @@ function changeLocalAuthorityInfoElements(localAuthName, siteInfo){
     siteInfo.forEach( function(d){
         if(i === 1){ firstSite = d["name"]; }
         // strip any unwanted text from the site-name
-        const siteName = d["name"].includes("- ") ? d["name"].substr(d["name"].indexOf("- ") + 2,) : d["name"];        
+        //const siteName = d["name"].includes("- ") ? d["name"].substr(d["name"].indexOf("- ") + 2,) : d["name"];
         // set emissions levels for active sites
         if(d["site_still_active"]){
             const keys = Object.keys(EMISSION_LOOKUP);
+            // although the *site* is active, it probably won't collect all emissions; default is "doesn't collect"
             const emissions = Array(keys.length).fill({"value": "-", "class": "cell inactive"})
-            emissions.splice(0,0,{"value": siteName, "class": i});
+            emissions.splice(0,0,{"value": d["name"], "class": i});
 
             const mySite = activeSiteInfo.find(function(e) { return e["Site name"] === d["name"]; });
             let k = 1;
             keys.forEach(function(elem){
                 if(mySite[EMISSION_LOOKUP[elem]["name"]] !== null && mySite[EMISSION_LOOKUP[elem]["name"]] !== 0){
-                    const val = { "value": mySite[EMISSION_LOOKUP[elem]["name"]], 
-                                "class": "cell cell-level-"+String(mySite[EMISSION_LOOKUP[elem]["name"]])};
+                    const val = {"value": mySite[EMISSION_LOOKUP[elem]["name"]],
+                                 "class": "active-table cell cell-level-"+String(mySite[EMISSION_LOOKUP[elem]["name"]])};
                     emissions[k] = val;
                 }
                 k++;
@@ -336,7 +346,7 @@ function changeLocalAuthorityInfoElements(localAuthName, siteInfo){
             i++;
         } else {
             inactiveSiteInfo.push(d);
-            const data = [{"value": siteName, "class": "inactive"},
+            const data = [{"value": shortSiteName(d["name"]), "class": "inactive"},
                         {"value": new Date(d["site_date_open"]).toDateString().slice(4,), "class": "inactive"},
                         {"value": new Date(d["site_date_closed"]).toDateString().slice(4,), "class": "inactive"},
                         {"value": d["site_type"], "class": "inactive"}];
@@ -352,12 +362,12 @@ function changeLocalAuthorityInfoElements(localAuthName, siteInfo){
 }
 
 function getSitesInLocalAuthority(la_name){
-    const la = LOCAL_AUTHORITIES.filter(function(d) { return d["name"] === la_name; });
-    return SITES.filter(function(d) { return d["local_auth_id"] === la[0]["code"]; });
+    const la = LOCAL_AUTHORITIES.find(function(d) { return d["name"] === la_name; });
+    return SITES.filter(function(d) { return d["local_auth_id"] === la["code"]; });
 }
 
 function getGeojsonForLocalAuthority(la_name){
-    return GEOJSON['features'].filter(function(d){
+    return GEOJSON['features'].find(function(d){
         return d['properties']['name'] === la_name;
     });
 }
@@ -585,11 +595,10 @@ function main(){
     localAuthsList.addEventListener("change", function(){
         // get the newly-selected element
         const newLocalAuth = document.getElementById('list-london-areas').selectedOptions[0].text;
-
         if(newLocalAuth !== "All Local Authorities") {
             // get the boundary coords of the local authority and move the map to centre on it
             const newGeoJson = getGeojsonForLocalAuthority(newLocalAuth);
-            map.fitBounds(getMapLocalAuthBounds(newGeoJson[0]["geometry"]["coordinates"][0][0]));
+            map.fitBounds(getMapLocalAuthBounds(newGeoJson["geometry"]["coordinates"][0][0]));
             
             // get rid of the existing local authority polygon layer, and draw a new LA polygon
             map.removeLayer(geoJsonLayer);
@@ -633,10 +642,6 @@ function main(){
     zoomIn.addEventListener("click", function(){
         console.log("Current zoom: " + map.getZoom());
     });
-
-    // ----------------------------------------------------------------------------------------------
-    // Add an event listener for the zoom-in button, to log current zoom level
-    // ----------------------------------------------------------------------------------------------
 }
 
 // run the script
