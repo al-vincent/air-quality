@@ -64,8 +64,8 @@ class NewVisitorTest(StaticLiveServerTestCase):
         # Information about the emissions type is shown further down again.
         emissions_title = self.browser.find_element_by_id("title-emissions")
         self.assertEqual(emissions_title.text, "Nitrogen Dioxide")
-    
-    def change_default_values(self):
+
+    def test_change_default_values(self):
         # # Cornelius opens the homepage
         # self.browser.get(self.live_server_url)
 
