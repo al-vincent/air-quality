@@ -59,9 +59,13 @@ const INACTIVE_TABLE_HEADERS = [{"text": "Sites", "class": "inactive"},
                                 {"text": "Closed", "class": "inactive"},
                                 {"text": "Type", "class": "inactive"}];
 
+// Refs to each of the emissions graphs that can be drawn for a site (declaring them
+// globally allows the graphs to be easily destroyed)                                
 const CO_GRAPH = null, NO2_GRAPH = null, O3_GRAPH = null, 
       PM10_GRAPH = null, PM25_GRAPH = null, SO2_GRAPH = null;
 
+// an emissions lookup object, containing useful info about each of the emissions types.
+// rgba vals are used in the emissions graphs
 const EMISSION_LOOKUP = {"CO": {"name": "Carbon Monoxide",
                                 "elementID": "chart-co",
                                 "backgroundColor": "rgba(255, 0, 0, 0.3)",
@@ -94,6 +98,7 @@ const EMISSION_LOOKUP = {"CO": {"name": "Carbon Monoxide",
                                 "chartObject": SO2_GRAPH}
                         };
 
+// Root of the LondonAir API
 const API_ROOT = "https://api.erg.kcl.ac.uk/AirQuality/";
 
 // ***************************************************************************************************
@@ -120,6 +125,15 @@ function getEmissionsValues(emissionsType){
     return { max: 10, data: newData };
 }
 
+/** 
+ * @summary Get simple summary information for the emissions type, specifically:
+ * - a description of the emission;
+ * - its effects on people's health;
+ * - a URL for more information on the emission.
+ * @param emissionsType (str), the name of the emission (e.g. "Nitrogen Dioxide")
+ * @returns an object with each of the 
+ * ^^ *** CHECK, FINISH THE ABOVE!! ***
+*/
 function getEmissionsInfo(emissionsType){
     for(let i = 0; i < EMISSION_INFO.length; i++){
         if(EMISSION_INFO[i]['name'] === emissionsType){
@@ -131,8 +145,8 @@ function getEmissionsInfo(emissionsType){
 
 function changeEmissionsInfoElements(emissionInfo){
     document.getElementById('title-emissions').innerHTML = emissionInfo['name'];
-    document.getElementById('description-emissions').innerHTML = emissionInfo['description'];
-    document.getElementById('health-effect-emissions').innerHTML = emissionInfo['health_effect'];
+    document.getElementById('text-description-emissions').innerHTML = emissionInfo['description'];
+    document.getElementById('text-health-effect-emissions').innerHTML = emissionInfo['health_effect'];
     // document.getElementById('link-emissions').innerHTML = emissionInfo['link'];
 }
 
@@ -275,7 +289,7 @@ function formatDate(date){
 function showSiteEmissions(siteName){
     clearGraphs();
     const siteCode = SITES.find(function(d) { return d["name"] === siteName })["code"];
-    document.getElementById("name-site").innerHTML = siteName;
+    document.getElementById("title-site").innerHTML = siteName;
     const today = new Date();
     const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
     const startDate = formatDate(today);

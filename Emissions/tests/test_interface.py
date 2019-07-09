@@ -11,6 +11,7 @@ class NewVisitorTest(StaticLiveServerTestCase):
         Species.objects.create(name="Carbon Monoxide", code="CO")
         Species.objects.create(name="Nitrogen Dioxide", code="NO2")
 
+        # TODO: change this to an environment variable!! MUCH better. 
         if platform.system() == "Windows":
             self.browser = webdriver.Chrome()
         else:
