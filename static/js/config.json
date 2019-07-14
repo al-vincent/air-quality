@@ -1,9 +1,5 @@
 {   
-    /* ===================================================================================      
-     * Values used in index.html; DOM element IDs, element classes, text etc.
-     * =================================================================================== */
     "HTML": {
-        // Navbar elements
         "NAVBAR": {
             "ID": "navbar-collapsible",
             "ITEMS":{
@@ -15,22 +11,19 @@
                 "REGISTER_ID": "nav-item-register"
             }
         },
-        // Drop-down menu elements
         "LISTS": {
             "EMISSION_LIST_ID": "list-emissions",
             "LOCAL_AUTHS_LIST_ID": "list-london-areas"
         },
-        // Map elements
         "MAP": {
             "ID": "map",
             "CLASS": "leaflet-container"
-        },
-        // Emissions section elements
+        },    
         "EMISSIONS": {
             "CONTAINER_ID": "info-emissions",
             "TITLE": {
                 "ID": "title-emissions",
-                "TEXT": "Info about the emission seleccted"
+                "TEXT": "Info about the emission selected"
             },
             "DESCRIPTION": {
                 "TITLE": {
@@ -52,8 +45,7 @@
                     "TEXT": "Health effects of the emission"
                 }
             }
-        },
-        // Local Authorities section elements
+        },        
         "LOCAL_AUTHS": {
             "CONTAINER_ID": "info-local-authority",
             "TITLE": {
@@ -69,7 +61,6 @@
                 "TABLE_ID": "table-inactive-sites"
             }            
         },
-        // Sites section elements
         "SITES": {
             "TITLE": {
                 "ID": "title-site",
@@ -78,7 +69,7 @@
             "CO": {
                 "ID": "chart-container-co",
                 "TEXT": "Carbon Monoxide, CO",
-                "GRAPH": {
+                "CHART": {
                     "ID": "chart-co",
                     "CLASS": "chartjs-render-monitor"
                 }
@@ -86,7 +77,7 @@
             "NO2": {
                 "ID": "chart-container-no2",
                 "TEXT": "Nitrogen Dioxide, NO<sub>2</sub>",
-                "GRAPH": {
+                "CHART": {
                     "ID": "chart-no2",
                     "CLASS": "chartjs-render-monitor"
                 }
@@ -94,7 +85,7 @@
             "O3": {
                 "ID": "chart-container-o3",
                 "TEXT": "Ozone, O<sub>3</sub>",
-                "GRAPH": {
+                "CHART": {
                     "ID": "chart-o3",
                     "CLASS": "chartjs-render-monitor"
                 }
@@ -102,7 +93,7 @@
             "PM10": {
                 "ID": "chart-container-pm10",
                 "TEXT": "PM10 Particulate",
-                "GRAPH": {
+                "CHART": {
                     "ID": "chart-pm10",
                     "CLASS": "chartjs-render-monitor"
                 }
@@ -110,7 +101,7 @@
             "PM25": {
                 "ID": "chart-container-pm25",
                 "TEXT": "PM2.5 Particulate",
-                "GRAPH": {
+                "CHART": {
                     "ID": "chart-pm25",
                     "CLASS": "chartjs-render-monitor"
                 }
@@ -118,13 +109,12 @@
             "SO2": {
                 "ID": "chart-container-so2",
                 "TEXT": "Sulphur Dioxide, NO<sub>2</sub>",
-                "GRAPH": {
+                "CHART": {
                     "ID": "chart-so2",
                     "CLASS": "chartjs-render-monitor"
                 }
             }
         },
-        // About section elements
         "ABOUT": {
             "CONTAINER_ID": "info-about",
             "TITLE": {
@@ -137,9 +127,12 @@
             }
         }
     },
-    /* ===================================================================================      
-     * Constant values used in the app, e.g. API routes, ...<what else?>...
-     * =================================================================================== */
     "CONSTANTS": {
+        "JSON_SCRIPT": {
+            "EMISSIONS_DATA_ID": "emissions-data-id",
+            "EMISSIONS_INFO_ID": "emissions-info-id",
+            "LOCAL_AUTHS_ID": "local-auths-id",
+            "SITES_ID": "sites-id"
+        }
     }
 }

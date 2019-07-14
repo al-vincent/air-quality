@@ -238,7 +238,7 @@
             <h3>About AirQuality</h3>            
           </div>
           <div class="row">
-            <p>
+            <p id="text-about">
               This web app displays data collected by the <a href="https://www.kcl.ac.uk/lsm/research/divisions/aes/research/ERG">
               Environmental Research Group</a> at <a href="https://www.kcl.ac.uk/">King's College London</a>. 
               The data is collected hourly from sites across Greater London, and is freely available through 
@@ -256,14 +256,11 @@
 
       <!-- LEAVE THESE 'TIL LAST!! -->
       <!-- pass data to javascript as JSON -->
+      {{ config|json_script:"config-id" }}
       {{ emissions_data|json_script:"emissions-data-id" }}
       {{ emissions_info|json_script:"emissions-info-id" }}
       {{ local_auths|json_script:"local-auths-id" }}
       {{ sites|json_script:"sites-id" }}
-
-      <!-- Load the javascript to render the map -->
-      <script src="{% static 'js/londonBoroughs.geojson' %}"></script>
-      <script src="{% static 'js/index.js' %}"></script>
 
     </div>
     <!-- /main body -->     
@@ -273,5 +270,11 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <!-- Load json config file -->
+    <!-- <script src="{% static 'js/config.json' %}"></script> -->
+    <!-- Load the javascript to render the map -->
+    <script src="{% static 'js/londonBoroughs.geojson' %}"></script>
+    <script src="{% static 'js/index.js' %}"></script>
   </body>
 </html>
