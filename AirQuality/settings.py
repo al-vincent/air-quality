@@ -20,19 +20,6 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')  # html templates
 STATIC_DIR = os.path.join(BASE_DIR, 'static')       # js, css, imgs etc.
 MEDIA_DIR = os.path.join(BASE_DIR, 'media')         # media files
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
-if 'DJANGO_DEBUG_FALSE' in os.environ:  
-    DEBUG = False
-    SECRET_KEY = os.environ['DJANGO_SECRET_KEY']  
-    ALLOWED_HOSTS = [os.environ['SITENAME']]  
-else:
-    DEBUG = True  
-    SECRET_KEY = 'insecure-key-for-dev'
-    ALLOWED_HOSTS = []
-
-# ALLOWED_HOSTS = ['air-quality.herokuapp.com', 'localhost', '127.0.0.1', '[::1]']
-
 # Application definition
 INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
@@ -151,3 +138,15 @@ try:
         django_heroku.settings(locals())
 except KeyError:
     print("Running locally")
+
+# See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
+if 'DJANGO_DEBUG_FALSE' in os.environ:  
+    DEBUG = False
+    SECRET_KEY = os.environ['DJANGO_SECRET_KEY']  
+    ALLOWED_HOSTS = [os.environ['SITENAME']]  
+    STATIC = STATIC_ROOT
+else:
+    DEBUG = True  
+    SECRET_KEY = 'insecure-key-for-dev'
+    ALLOWED_HOSTS = []
+    STATIC = STATIC_DIR

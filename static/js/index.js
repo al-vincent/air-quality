@@ -20,12 +20,13 @@
 
 // NOTE: wrt the consts below - should these be in main()?  E.g. am I adding to the global
 // namespace by putting them here?
-const EMISSION_LEVELS = JSON.parse(document.getElementById('emissions-data-id').textContent);
+const CONFIG = JSON.parse(document.getElementById("config-id").textContent);
+const EMISSION_LEVELS = JSON.parse(document.getElementById(CONFIG.CONSTANTS.JSON_SCRIPT.EMISSIONS_DATA_ID).textContent);
 console.log("EMISSION_LEVELS:");
 console.log(EMISSION_LEVELS);
-const EMISSION_INFO = JSON.parse(document.getElementById('emissions-info-id').textContent);
-const LOCAL_AUTHORITIES = JSON.parse(document.getElementById('local-auths-id').textContent);
-const SITES = JSON.parse(document.getElementById('sites-id').textContent);
+const EMISSION_INFO = JSON.parse(document.getElementById(CONFIG.CONSTANTS.JSON_SCRIPT.EMISSIONS_INFO_ID).textContent);
+const LOCAL_AUTHORITIES = JSON.parse(document.getElementById(CONFIG.CONSTANTS.JSON_SCRIPT.LOCAL_AUTHS_ID).textContent);
+const SITES = JSON.parse(document.getElementById(CONFIG.CONSTANTS.JSON_SCRIPT.SITES_ID).textContent);
 
 // default values for drop-down menus
 const DEFAULT_EMISSIONS = "Nitrogen Dioxide";
@@ -59,41 +60,46 @@ const INACTIVE_TABLE_HEADERS = [{"text": "Sites", "class": "inactive"},
                                 {"text": "Closed", "class": "inactive"},
                                 {"text": "Type", "class": "inactive"}];
 
+// Refs to each of the emissions graphs that can be drawn for a site (declaring them
+// globally allows the graphs to be easily destroyed)                                
 const CO_GRAPH = null, NO2_GRAPH = null, O3_GRAPH = null, 
       PM10_GRAPH = null, PM25_GRAPH = null, SO2_GRAPH = null;
 
+// an emissions lookup object, containing useful info about each of the emissions types.
+// rgba vals are used in the emissions graphs
 const EMISSION_LOOKUP = {"CO": {"name": "Carbon Monoxide",
-                                "elementID": "chart-co",
+                                // "elementID": CONFIG.HTML.SITES.CO.CHART.ID,
                                 "backgroundColor": "rgba(255, 0, 0, 0.3)",
                                 "borderColor": "rgba(255, 0, 0, 0.6)",
                                 "chartObject": CO_GRAPH},
                         "NO2": {"name": "Nitrogen Dioxide",
-                                "elementID": "chart-no2",
+                                // "elementID": CONFIG.HTML.SITES.NO2.CHART.ID,
                                 "backgroundColor": "rgba(0, 255, 0, 0.3)",
                                 "borderColor": "rgba(0, 255, 0, 0.6)",
                                 "chartObject": NO2_GRAPH},
                         "O3": {"name": "Ozone",
-                               "elementID": "chart-o3",
+                            //    "elementID": CONFIG.HTML.SITES.O3.CHART.ID,
                                "backgroundColor": "rgba(0, 0, 255, 0.3)",
                                "borderColor": "rgba(0, 0, 255, 0.6)",
                                "chartObject": O3_GRAPH},
                         "PM10": {"name": "PM10 Particulate",
-                                 "elementID": "chart-pm10",
+                                //  "elementID": CONFIG.HTML.SITES.PM10.CHART.ID,
                                  "backgroundColor": "rgba(33, 120, 120, 0.3)",
                                  "borderColor": "rgba(33, 120, 120, 0.6)",
                                  "chartObject": PM10_GRAPH},
                         "PM25": {"name": "PM2.5 Particulate",
-                                 "elementID": "chart-pm25",
+                                //  "elementID": CONFIG.HTML.SITES.PM10.CHART.ID,
                                  "backgroundColor": "rgba(120, 33, 120, 0.3)",
                                  "borderColor": "rgba(120, 33, 120, 0.6)",
                                  "chartObject": PM25_GRAPH},
                         "SO2": {"name": "Sulphur Dioxide",
-                                "elementID": "chart-so2",
+                                // "elementID": CONFIG.HTML.SITES.SO2.CHART.ID,
                                 "backgroundColor": "rgba(120, 120, 33, 0.3)",
                                 "borderColor": "rgba(120, 120, 33, 0.6)",
                                 "chartObject": SO2_GRAPH}
                         };
 
+// Root of the LondonAir API
 const API_ROOT = "https://api.erg.kcl.ac.uk/AirQuality/";
 
 // ***************************************************************************************************
@@ -120,6 +126,15 @@ function getEmissionsValues(emissionsType){
     return { max: 10, data: newData };
 }
 
+/** 
+ * @summary Get simple summary information for the emissions type, specifically:
+ * - a description of the emission;
+ * - its effects on people's health;
+ * - a URL for more information on the emission.
+ * @param emissionsType (str), the name of the emission (e.g. "Nitrogen Dioxide")
+ * @returns an object with each of the 
+ * ^^ *** CHECK, FINISH THE ABOVE!! ***
+*/
 function getEmissionsInfo(emissionsType){
     for(let i = 0; i < EMISSION_INFO.length; i++){
         if(EMISSION_INFO[i]['name'] === emissionsType){
@@ -129,10 +144,10 @@ function getEmissionsInfo(emissionsType){
     return null;
 }
 
-function changeEmissionsInfoElements(emissionInfo){
-    document.getElementById('title-emissions').innerHTML = emissionInfo['name'];
-    document.getElementById('description-emissions').innerHTML = emissionInfo['description'];
-    document.getElementById('health-effect-emissions').innerHTML = emissionInfo['health_effect'];
+function changeEmissionsInfoElements(emissionInfo){    
+    document.getElementById(CONFIG.HTML.EMISSIONS.TITLE.ID).innerHTML = emissionInfo['name'];
+    document.getElementById(CONFIG.HTML.EMISSIONS.DESCRIPTION.BODY.ID).innerHTML = emissionInfo['description'];    
+    document.getElementById(CONFIG.HTML.EMISSIONS.HEALTH_EFFECTS.BODY.ID).innerHTML = emissionInfo['health_effect'];
     // document.getElementById('link-emissions').innerHTML = emissionInfo['link'];
 }
 
@@ -207,7 +222,7 @@ function plotDaysEmissionsGraph(emissionCode, graphData){
 		}]
     };
 
-    const element = document.getElementById(EMISSION_LOOKUP[emissionCode]["elementID"]);
+    const element = document.getElementById(CONFIG.HTML.SITES[emissionCode].CHART.ID);
     element.parentElement.parentElement.classList.remove("row-hidden");
     const ctx = element.getContext('2d');
     EMISSION_LOOKUP[emissionCode]["chartObject"] = new Chart(ctx, {
@@ -275,7 +290,7 @@ function formatDate(date){
 function showSiteEmissions(siteName){
     clearGraphs();
     const siteCode = SITES.find(function(d) { return d["name"] === siteName })["code"];
-    document.getElementById("name-site").innerHTML = siteName;
+    document.getElementById(CONFIG.HTML.SITES.TITLE.ID).innerHTML = siteName;
     const today = new Date();
     const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
     const startDate = formatDate(today);
@@ -290,10 +305,10 @@ function shortSiteName(fullSiteName){
 
 function changeLocalAuthorityInfoElements(localAuthName, siteInfo){
     // unhide the local-authority jumbotron
-    document.getElementById("info-local-authority").classList.remove("row-hidden");
+    document.getElementById(CONFIG.HTML.LOCAL_AUTHS.CONTAINER_ID).classList.remove("row-hidden");
 
     // set the title to be the local auth selected
-    document.getElementById('title-local-authority').innerHTML = localAuthName;
+    document.getElementById(CONFIG.HTML.LOCAL_AUTHS.TITLE.ID).innerHTML = localAuthName;
     
     // filter EMISSION_LEVELS data to get current emissions for active sites in this LA
     // NOTE: this is necessary, because EMISSION_LEVELS contains the current emissions for 
@@ -306,15 +321,19 @@ function changeLocalAuthorityInfoElements(localAuthName, siteInfo){
 
     // setup active site info
     let description = "There are " + activeSiteInfo.length + " active sites in the local authority:"
-    document.getElementById('description-active-sites').innerHTML = description;
-    document.getElementById("table-active-sites").innerHTML = "";
-    if(activeSiteInfo.length > 0) { createTableHead("table-active-sites", ACTIVE_TABLE_HEADERS); };
+    document.getElementById(CONFIG.HTML.LOCAL_AUTHS.ACTIVE_SITES.DESCRIPTION_ID).innerHTML = description;
+    document.getElementById(CONFIG.HTML.LOCAL_AUTHS.ACTIVE_SITES.TABLE_ID).innerHTML = "";
+    if(activeSiteInfo.length > 0) { 
+        createTableHead(CONFIG.HTML.LOCAL_AUTHS.ACTIVE_SITES.TABLE_ID, ACTIVE_TABLE_HEADERS); 
+    }
     
     // setup inactive site info
     description = "There are " + (siteInfo.length - activeSiteInfo.length) + " inactive sites in the local authority:"
-    document.getElementById('description-inactive-sites').innerHTML = description;
-    document.getElementById("table-inactive-sites").innerHTML = "";
-    if(activeSiteInfo.length < siteInfo.length ){createTableHead("table-inactive-sites", INACTIVE_TABLE_HEADERS); };
+    document.getElementById(CONFIG.HTML.LOCAL_AUTHS.INACTIVE_SITES.DESCRIPTION_ID).innerHTML = description;
+    document.getElementById(CONFIG.HTML.LOCAL_AUTHS.INACTIVE_SITES.TABLE_ID).innerHTML = "";
+    if(activeSiteInfo.length < siteInfo.length ){
+        createTableHead(CONFIG.HTML.LOCAL_AUTHS.INACTIVE_SITES.TABLE_ID, INACTIVE_TABLE_HEADERS); 
+    }
 
     // add info for each site
     let i = 1, j = 1;
@@ -500,7 +519,7 @@ function main(){
     };
 
     // create the map using the 'map' ID tag, and add the two layers
-    let map = L.map("map", { 
+    let map = L.map(CONFIG.HTML.MAP.ID, { 
         layers: [baseLayer, heatmapLayer, geoJsonLayer]//, sitesLayer]
     });
 
@@ -564,7 +583,7 @@ function main(){
         ]);
     } 
     // initialise the heatmap with data from API
-    document.getElementById('list-emissions').value = DEFAULT_CODE;
+    document.getElementById(CONFIG.HTML.LISTS.EMISSION_LIST_ID).value = DEFAULT_CODE;    
     heatmapLayer.setData(getEmissionsValues(DEFAULT_EMISSIONS));
 
     // change the text of the emissions elements to be about emission we're looking at
@@ -573,11 +592,11 @@ function main(){
     // ----------------------------------------------------------------------------------------------
     // Add an event listener, to update elements when the list-emissions drop-down changes
     // ----------------------------------------------------------------------------------------------
-    const emissionsList = document.getElementById('list-emissions');
+    const emissionsList = document.getElementById(CONFIG.HTML.LISTS.EMISSION_LIST_ID);
     // listen for a change in the emissions drop-down
     emissionsList.addEventListener("change", function(){
         // get the newly-selected element
-        const newEmissionsType = document.getElementById('list-emissions').selectedOptions[0].text;
+        const newEmissionsType = emissionsList.selectedOptions[0].text;
         
         // get the new emissions intensities
         heatmapLayer.setData(getEmissionsValues(newEmissionsType));
@@ -590,11 +609,11 @@ function main(){
     // ----------------------------------------------------------------------------------------------
     // Add an event listener, to update elements when the list-london-areas drop-down changes
     // ----------------------------------------------------------------------------------------------
-    const localAuthsList = document.getElementById('list-london-areas');
+    const localAuthsList = document.getElementById(CONFIG.HTML.LISTS.LOCAL_AUTHS_LIST_ID);
     // listen for a change in the local authorities drop-down
     localAuthsList.addEventListener("change", function(){
         // get the newly-selected element
-        const newLocalAuth = document.getElementById('list-london-areas').selectedOptions[0].text;
+        const newLocalAuth = localAuthsList.selectedOptions[0].text;
         if(newLocalAuth !== "All Local Authorities") {
             // get the boundary coords of the local authority and move the map to centre on it
             const newGeoJson = getGeojsonForLocalAuthority(newLocalAuth);
@@ -621,7 +640,7 @@ function main(){
             changeLocalAuthorityInfoElements(newLocalAuth, sites);
         } else {
             // TODO: reset the map view, either to the user location or to the London map
-            const element = document.getElementById("info-local-authority");
+            const element = document.getElementById(CONFIG.HTML.LOCAL_AUTHS.CONTAINER_ID);
             if(!element.classList.contains("row-hidden")) {
                 element.classList.add("row-hidden");
             }

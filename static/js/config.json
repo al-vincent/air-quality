@@ -1,0 +1,138 @@
+{   
+    "HTML": {
+        "NAVBAR": {
+            "ID": "navbar-collapsible",
+            "ITEMS":{
+                "MAP_ID": "nav-item-map",
+                "EMISSIONS_ID": "nav-item-emissions",
+                "LOCAL_AUTHS_ID": "nav-item-local-auths",
+                "ABOUT_ID": "nav-item-about",
+                "LOGIN_ID": "nav-item-login",
+                "REGISTER_ID": "nav-item-register"
+            }
+        },
+        "LISTS": {
+            "EMISSION_LIST_ID": "list-emissions",
+            "LOCAL_AUTHS_LIST_ID": "list-london-areas"
+        },
+        "MAP": {
+            "ID": "map",
+            "CLASS": "leaflet-container"
+        },    
+        "EMISSIONS": {
+            "CONTAINER_ID": "info-emissions",
+            "TITLE": {
+                "ID": "title-emissions",
+                "TEXT": "Info about the emission selected"
+            },
+            "DESCRIPTION": {
+                "TITLE": {
+                    "ID": "title-description",
+                    "TEXT": "Description"
+                },
+                "BODY": {
+                    "ID": "text-description-emissions",
+                    "TEXT": "Description of the emission"
+                }
+            },
+            "HEALTH_EFFECTS": {
+                "TITLE": {
+                    "ID": "title-health-effects",
+                    "TEXT": "Health Effects"
+                },
+                "BODY": {
+                    "ID": "text-health-effect-emissions",
+                    "TEXT": "Health effects of the emission"
+                }
+            }
+        },        
+        "LOCAL_AUTHS": {
+            "CONTAINER_ID": "info-local-authority",
+            "TITLE": {
+                "ID": "title-local-authority",
+                "TEXT": "Information about the Local Authority"
+            },
+            "ACTIVE_SITES": {
+                "DESCRIPTION_ID": "description-active-sites",
+                "TABLE_ID": "table-active-sites"
+            },
+            "INACTIVE_SITES": {
+                "DESCRIPTION_ID": "description-inactive-sites",
+                "TABLE_ID": "table-inactive-sites"
+            }            
+        },
+        "SITES": {
+            "TITLE": {
+                "ID": "title-site",
+                "TEXT": "Site name"
+            },
+            "CO": {
+                "ID": "chart-container-co",
+                "TEXT": "Carbon Monoxide, CO",
+                "CHART": {
+                    "ID": "chart-co",
+                    "CLASS": "chartjs-render-monitor"
+                }
+            },
+            "NO2": {
+                "ID": "chart-container-no2",
+                "TEXT": "Nitrogen Dioxide, NO<sub>2</sub>",
+                "CHART": {
+                    "ID": "chart-no2",
+                    "CLASS": "chartjs-render-monitor"
+                }
+            },
+            "O3": {
+                "ID": "chart-container-o3",
+                "TEXT": "Ozone, O<sub>3</sub>",
+                "CHART": {
+                    "ID": "chart-o3",
+                    "CLASS": "chartjs-render-monitor"
+                }
+            },
+            "PM10": {
+                "ID": "chart-container-pm10",
+                "TEXT": "PM10 Particulate",
+                "CHART": {
+                    "ID": "chart-pm10",
+                    "CLASS": "chartjs-render-monitor"
+                }
+            },
+            "PM25": {
+                "ID": "chart-container-pm25",
+                "TEXT": "PM2.5 Particulate",
+                "CHART": {
+                    "ID": "chart-pm25",
+                    "CLASS": "chartjs-render-monitor"
+                }
+            },
+            "SO2": {
+                "ID": "chart-container-so2",
+                "TEXT": "Sulphur Dioxide, NO<sub>2</sub>",
+                "CHART": {
+                    "ID": "chart-so2",
+                    "CLASS": "chartjs-render-monitor"
+                }
+            }
+        },
+        "ABOUT": {
+            "CONTAINER_ID": "info-about",
+            "TITLE": {
+                "ID": "title-about",
+                "TEXT": "About AirQuality"
+            },
+            "BODY": {
+                "ID": "text-about",
+                "TEXT": "TBD..."
+            }
+        }
+    },
+    "CONSTANTS": {
+        "JSON_SCRIPT": {
+            "EMISSIONS_DATA_ID": "emissions-data-id",
+            "EMISSIONS_INFO_ID": "emissions-info-id",
+            "LOCAL_AUTHS_ID": "local-auths-id",
+            "SITES_ID": "sites-id"
+        }
+    }
+}
